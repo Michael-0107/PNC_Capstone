@@ -20,6 +20,7 @@ tags_interested = [
     "NetIncomeLoss", 
     "Assets",
     "AssetsCurrent",
+    "AccountsReceivableNet",
     "InventoryNet",
     "CashAndCashEquivalentsAtCarryingValue",
     "NoncurrentAssets",

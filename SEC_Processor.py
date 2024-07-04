@@ -6,6 +6,9 @@ from Config import Config, tags_interested
 
 class SEC_Processor:
     def __init__(self, year, quarter):
+        self.year = year
+        self.quarter = quarter
+
         target_folder = os.path.join(Config.data_path, "SEC_Fillings", f"{year}q{quarter}")
 
         sub_path = os.path.join(target_folder, "sub.txt")
@@ -16,6 +19,8 @@ class SEC_Processor:
 
     def get_company_key(self, company_name, form='10-K'):
         target_row = self.sub_df[(self.sub_df["name"]==company_name) & (self.sub_df["form"] == "10-K")]
+        if len(target_row) == 0:
+            raise Exception(f"No such company: {company_name} in {self.year}q{self.quarter}")
         return target_row['adsh'].values[0]
     
     def get_company_nums(self, company_key):
