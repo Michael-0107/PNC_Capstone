@@ -26,7 +26,8 @@ class FeatureProcessor:
                         if verbose: print(f"Timestamp {timestamp} is not in range {start_year}-{end_year}")
                         continue
                     if (len(num_dict)!=len(tags_interested)):
-                        if verbose: print(f"Timestamp {timestamp} has {len(num_dict)} tags, expected {len(tags_interested)}")
+                        if verbose: 
+                            print(f"Company {company_name}, Timestamp {timestamp} has {len(num_dict)} tags, expected {len(tags_interested)}")
                         continue
                     ret_feature_dict[company_name][timestamp] = num_dict
         return ret_feature_dict
@@ -73,7 +74,7 @@ class FeatureProcessor:
     
 
 if __name__ == "__main__":
-    company_name_list = ["WALMART INC."]
+    company_name_list = ["TARGET CORP"]
     feature_processor = FeatureProcessor()
     feature_dict = feature_processor.generate_feature_dict(company_name_list, start_year=2019, end_year=2023, verbose=True)
     print(feature_dict)

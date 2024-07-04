@@ -15,7 +15,7 @@ class SEC_Processor:
         num_path = os.path.join(target_folder, "num.txt")
 
         self.sub_df = pd.read_csv(sub_path, sep="\t")
-        self.num_df = pd.read_csv(num_path, sep="\t")
+        self.num_df = pd.read_csv(num_path, sep="\t", dtype={"footnote": str})
 
     def get_company_key(self, company_name, form='10-K'):
         target_row = self.sub_df[(self.sub_df["name"]==company_name) & (self.sub_df["form"] == "10-K")]
@@ -42,5 +42,5 @@ class SEC_Processor:
 
 if __name__ == "__main__":
     processor = SEC_Processor(year=2024, quarter=1)
-    walmart_key = processor.get_company_key("WALMART INC.", form='10-K')
+    walmart_key = processor.get_company_key("TARGET CORP", form='10-K')
     print(walmart_key)
