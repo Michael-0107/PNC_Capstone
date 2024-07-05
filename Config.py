@@ -12,22 +12,29 @@ class Config:
         os.makedirs(model_path)
 
 
-tags_interested = [
-    "Revenues", 
-    "CostOfRevenue", 
-    "SellingGeneralAndAdministrativeExpense", 
-    "OperatingIncomeLoss", 
-    "NetIncomeLoss", 
-    "Assets",
-    "AssetsCurrent",
-    "AccountsReceivableNet",
-    "InventoryNet",
-    "CashAndCashEquivalentsAtCarryingValue",
-    "NoncurrentAssets",
-    "PropertyPlantAndEquipmentNet",
-    "LiabilitiesCurrent",
-    "LongTermDebt",
-    "LongTermDebtCurrent",
-    "LongTermDebtNoncurrent",
-    "StockholdersEquity"
+feature_list = [
+    "actq",
+    "ancq", 
+    "atq",
+    "cheq",
+    "cogsq",
+    "invtq",
+    "lctq",
+    "lltq",
+    "ltq",
+    "niq",
+    "ppentq",
+    "revtq",
+    "teqq",
+    "xsgaq",
+    "GrossProfitRatio",
+    "NetProfitRatio",
+    "CurrentRatio",
+    "QuickAcidRatio",
+    "CashRatio",
+    "EquityMultiplier",
+    "ReturnOnAsset",
+    "ReturnOnEquity",
+    "InventoryTurnover"
 ]
+
