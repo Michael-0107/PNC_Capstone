@@ -38,3 +38,29 @@ feature_list = [
     "InventoryTurnover"
 ]
 
+rating_to_category = {
+    "AAA": 0, 
+    "AA+": 1,
+    "AA": 2,
+    "AA-": 3, 
+    "A+": 4,
+    "A": 5,
+    "A-": 6, 
+    "BBB+": 7,
+    "BBB": 8,
+    "BBB-": 9, 
+    "BB+": 10,
+    "BB": 11,
+    "BB-": 12, 
+    "B+": 13,
+    "B": 14,
+    "B-": 15, 
+    "CCC+": 16,
+    "CCC": 17,
+    "CCC-": 18, 
+    "CC": 19,
+    "C": 20,
+    "RD": 21,
+    "D": 22
+}
+

@@ -4,7 +4,7 @@ import torch
 from collections import OrderedDict
 import pickle
 
-from Config import Config, feature_list
+from Hypers import Config, feature_list
 
 class CompustatExtractor:
     def __init__(self):
