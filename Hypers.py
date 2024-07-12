@@ -12,6 +12,11 @@ class Config:
         os.makedirs(model_path)
 
 
+    epochs = 100
+    batch_size = 4
+    learning_rate = 0.001
+
+
 feature_list = [
     "actq",
     "ancq", 

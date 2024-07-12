@@ -48,24 +48,14 @@ class CompustatExtractor:
 
             if ticker not in ret_dict:
                 ret_dict[ticker] = {}
-            if year not in ret_dict[ticker]:
-                ret_dict[ticker][year] = {}
+            
+            peroid_str = f"{year}Q{quarter}"
 
             feature_tensor = torch.tensor(features)
             assert(feature_tensor.shape[0] == len(feature_list))
-            ret_dict[ticker][year][quarter] = feature_tensor
+            ret_dict[ticker][peroid_str] = feature_tensor
         
         return ret_dict
-    
-    @staticmethod
-    def save_pickle(save_dict, save_path):
-        with open(save_path, 'wb') as handle:
-            pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    @staticmethod
-    def load_pickle(load_path):
-        with open(load_path, 'rb') as handle:
-            return pickle.load(handle)
         
     @staticmethod
     def process_compustat_data(csv_path, save=True, filestem="compustat"):
@@ -83,7 +73,7 @@ class CompustatExtractor:
 
 if __name__ == "__main__":
     feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", "Retailer_07041810.csv"), 
-                                                               filestem="Retail_07041810")
+                                                               filestem="Retail_07111221")
     print(feature_dict)
 
 
