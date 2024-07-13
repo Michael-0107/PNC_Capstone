@@ -59,7 +59,9 @@ def custom_collate_fn(batch):
 
 
     return features_padded, label_padded, mask
-    
+
+
+
 
 if __name__ == "__main__":
     output_dict = read_dict_json(os.path.join(Config.data_path, "retail_ratings.json"))

@@ -1,27 +1,32 @@
 import os
-from pyexpat import features
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import logging
 from tqdm import tqdm
+from datetime import datetime
 
 import Hypers
 from Hypers import Config
-
 import utils
 
 
 class Trainer:
     def __init__(self, model, criterion, optimizer, device, train_loader, test_loader) -> None:
-        self.model = model
+        # Training Related
+        self.device = device
+        self.model = model.to(self.device)
         self.criterion = criterion
         self.optimizer = optimizer
-        self.device = device
         self.train_loader = train_loader
         self.test_loader = test_loader
-
+        self.current_epoch = 0
         # Statistics
+        self.start_time = datetime.now().strftime("%m%d%H%M")
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename=os.path.join(Config.log_path, f"train_{self.start_time}.log"), level=logging.INFO)
+
+        self.best_test_loss = torch.inf
         self.train_loss_history = []
         self.train_acccuracy_history = []
         self.test_loss_history = []
@@ -31,7 +36,10 @@ class Trainer:
     def train_one_epoch(self):
         loss_record = []
         accuracy_record = []
-        for idx, (features_b, labels_b, mask_b) in enumerate(tqdm(self.train_loader)):
+        
+        process_bar = tqdm(self.train_loader)
+        process_bar.set_description(f"Epoch {self.current_epoch}")
+        for idx, (features_b, labels_b, mask_b) in enumerate(process_bar):
             optimizer.zero_grad()
             # features_b: (B, L, len(features))
             # labels_b: (B, L)
@@ -63,6 +71,8 @@ class Trainer:
             pred = torch.argmax(output_masked, dim=1)
             accuracy = (pred == labels_masked).sum() / len(labels_masked)
             accuracy_record.append(accuracy.item())
+
+            process_bar.set_postfix_str(f"Loss: {loss.item():.3f}, Accuracy: {accuracy.item():.3f}")
         
         return sum(loss_record)/len(loss_record), sum(accuracy_record)/len(accuracy_record)
 
@@ -70,8 +80,11 @@ class Trainer:
     def validate_one_epoch(self):
         loss_record = []
         accuracy_record = []
+
+        process_bar = tqdm(self.test_loader)
+        process_bar.set_description(f"Epoch {self.current_epoch}")
         with torch.no_grad():
-            for idx, (features_b, labels_b, mask_b) in enumerate(tqdm(self.test_loader)):
+            for idx, (features_b, labels_b, mask_b) in enumerate(process_bar):
                 features_b = features_b.to(self.device)
                 labels_b = labels_b.to(self.device)
                 mask_b = mask_b.to(self.device)
@@ -96,6 +109,8 @@ class Trainer:
                 accuracy = (pred == labels_masked).sum() / len(labels_masked)
                 accuracy_record.append(accuracy.item())
 
+                process_bar.set_postfix_str(f"Loss: {loss.item():.3f}, Accuracy: {accuracy.item():.3f}")
+
         return sum(loss_record)/len(loss_record), sum(accuracy_record)/len(accuracy_record)
     
     
@@ -105,17 +120,27 @@ class Trainer:
         self.test_loss_history.append(test_loss)
         self.test_acccuracy_history.append(test_accuracy)
 
-        logging.info(f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}")
-        logging.info(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")
+        # logging.info(f"Epoch {self.current_epoch}: Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f}, \
+        #              Test Loss: {test_loss:.3f}, Test Accuracy: {test_accuracy:.3f}")
+        record_string = f"Epoch {self.current_epoch}: Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f})"
+        logging.info(record_string)
+        tqdm.write(record_string)
+        
+        # if test_loss < self.best_test_loss:
+        #     self.best_test_loss = test_loss
+        #     self.save_model()
         
 
     def train_loop(self):
-        for epoch in range(Config.epochs):
+        for self.current_epoch in range(Config.epochs):
             train_loss, train_accuracy = self.train_one_epoch()
-            test_loss, test_accuracy = self.validate_one_epoch()
+            # test_loss, test_accuracy = self.validate_one_epoch()
 
-            self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
-            
+            # self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
+            self.summarize_one_epoch(train_loss, train_accuracy, None, None)
+    
+    def save_model(self):
+        torch.save(self.model.state_dict(), os.path.join(Config.model_path, f"model_{self.current_epoch}.pkl"))
 
 if __name__ == "__main__":
     from PredictorModel import PredictorModel
