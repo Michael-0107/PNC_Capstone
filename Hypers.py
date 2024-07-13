@@ -5,16 +5,20 @@ class Config:
     base_path = os.getcwd()
     data_path = os.path.join(base_path, "data")
     model_path = os.path.join(base_path, "model")
+    log_path = os.path.join(base_path, "log")
 
     if not os.path.exists(data_path):
         os.makedirs(data_path)
     if not os.path.exists(model_path):
         os.makedirs(model_path)
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
 
 
     epochs = 100
     batch_size = 4
     learning_rate = 0.001
+    hidden_size = 128
 
 
 feature_list = [

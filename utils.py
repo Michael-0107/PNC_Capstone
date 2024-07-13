@@ -29,9 +29,9 @@ def merge_input_output_dicts(input_dict, output_dict):
             # transform to one hot
             rating = output_dict[company_name][period]
             category = rating_to_category[rating]
-            output_dict[company_name][period] = F.one_hot(torch.tensor(category), num_classes=len(rating_to_category))
+            # output_dict[company_name][period] = F.one_hot(torch.tensor(category), num_classes=len(rating_to_category))
 
-            merged_dict[company_name][period] = (input_dict[company_name][period], output_dict[company_name][period])
+            merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]))
     
     return merged_dict
 
@@ -51,10 +51,12 @@ def custom_collate_fn(batch):
     
     features_padded = torch.nn.utils.rnn.pad_sequence(features, batch_first=True)
     label_padded = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True)
+    label_padded = label_padded.squeeze(-1)
 
     mask = torch.zeros((features_padded.shape[0], features_padded.shape[1]))
     for idx, _ in enumerate(features):
         mask[idx, 0:len(labels[idx])] = 1
+
 
     return features_padded, label_padded, mask
     
