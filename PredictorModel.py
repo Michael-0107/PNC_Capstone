@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-import Hypers
 
 class PredictorModel(nn.Module):
     def __init__(self, input_size, hidden_size, proj_size=0):
@@ -15,8 +14,8 @@ class PredictorModel(nn.Module):
     
     
 
-
 if __name__ == "__main__":
+    import Hypers
     model = PredictorModel(len(Hypers.feature_list), hidden_size=128, proj_size=len(Hypers.rating_to_category))
     random_tensor = torch.rand(4, 31, len(Hypers.feature_list))
 

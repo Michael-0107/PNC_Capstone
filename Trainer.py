@@ -40,7 +40,7 @@ class Trainer:
         process_bar = tqdm(self.train_loader)
         process_bar.set_description(f"Epoch {self.current_epoch}")
         for idx, (features_b, labels_b, mask_b) in enumerate(process_bar):
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             # features_b: (B, L, len(features))
             # labels_b: (B, L)
             # mask_b: (B, L)
@@ -49,21 +49,22 @@ class Trainer:
             mask_b = mask_b.to(self.device)
 
             # Forward Pass
-            c_0 = torch.zeros(1, Config.batch_size, Config.hidden_size).to(self.device)
-            h_0 = torch.zeros(1, Config.batch_size, Config.hidden_size).to(self.device)
-            output_b = model(features_b,h_0, c_0) 
+            c_0 = torch.zeros(1, Config.batch_size, Config.hidden_size).to(self.device) # (directions*num_layers, batch_size, hidden_size)
+            h_0 = torch.zeros(1, Config.batch_size, Config.proj_size).to(self.device) # (directions*num_layers, batch_size, hidden_size if proj_size=0 else proj_size)
+            
+            output_b, h_end, c_end = self.model(features_b, h_0, c_0)
             assert output_b.shape == (features_b.shape[0], features_b.shape[1], len(Hypers.rating_to_category)) # (B, L, len(categories))
 
-            output_flat = output_b.view(-1, len(Hypers.rating_to_category))
-            labels_flat = labels_b.view(-1)
-            mask_flat = mask_b.view(-1)
+            output_flat = output_b.reshape(-1, len(Hypers.rating_to_category))
+            labels_flat = labels_b.reshape(-1)
+            mask_flat = mask_b.reshape(-1)
 
             output_masked = output_flat[mask_flat == 1]
             labels_masked = labels_flat[mask_flat == 1]
 
-            loss = criterion(output_masked, labels_masked)
+            loss = self.criterion(output_masked, labels_masked)
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
 
             # Statistics
             loss_record.append(loss.item())
@@ -91,7 +92,7 @@ class Trainer:
 
                 c_0 = torch.zeros(1, Config.batch_size, Config.hidden_size).to(self.device)
                 h_0 = torch.zeros(1, Config.batch_size, Config.hidden_size).to(self.device)
-                output_b = model(features_b,h_0, c_0) 
+                output_b = self.model(features_b,h_0, c_0) 
                 assert output_b.shape == (features_b.shape[0], features_b.shape[1], len(Hypers.rating_to_category)) # (B, L, len(categories))
 
                 output_flat = output_b.view(-1, len(Hypers.rating_to_category))
@@ -101,7 +102,7 @@ class Trainer:
                 output_masked = output_flat[mask_flat == 1]
                 labels_masked = labels_flat[mask_flat == 1]
 
-                loss = criterion(output_masked, labels_masked)
+                loss = self.criterion(output_masked, labels_masked)
 
                 # Statistics
                 loss_record.append(loss.item())
@@ -144,9 +145,9 @@ class Trainer:
 
 if __name__ == "__main__":
     from PredictorModel import PredictorModel
-    model = PredictorModel(input_size=len(Hypers.feature_list), hidden_size=Config.hidden_size, output_size=len(Hypers.rating_to_category))
+    model = PredictorModel(input_size=len(Hypers.feature_list), hidden_size=Config.hidden_size, proj_size=len(Hypers.rating_to_category))
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     from RatingSet import RatingSet
