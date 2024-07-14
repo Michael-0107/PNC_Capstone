@@ -1,4 +1,5 @@
 import os
+from numpy import dtype
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -49,8 +50,8 @@ class Trainer:
             mask_b = mask_b.to(self.device)
 
             # Forward Pass
-            c_0 = torch.zeros(1, Config.batch_size, Config.hidden_size).to(self.device) # (directions*num_layers, batch_size, hidden_size)
-            h_0 = torch.zeros(1, Config.batch_size, Config.proj_size).to(self.device) # (directions*num_layers, batch_size, hidden_size if proj_size=0 else proj_size)
+            c_0 = torch.zeros(1, features_b.shape[0], Config.hidden_size).to(self.device) # (directions*num_layers, batch_size, hidden_size)
+            h_0 = torch.zeros(1, features_b.shape[0], Config.proj_size).to(self.device) # (directions*num_layers, batch_size, hidden_size if proj_size=0 else proj_size)
             
             output_b, h_end, c_end = self.model(features_b, h_0, c_0)
             assert output_b.shape == (features_b.shape[0], features_b.shape[1], len(Hypers.rating_to_category)) # (B, L, len(categories))
@@ -61,6 +62,7 @@ class Trainer:
 
             output_masked = output_flat[mask_flat == 1]
             labels_masked = labels_flat[mask_flat == 1]
+            labels_masked = labels_masked.to(self.device, dtype=torch.long)
 
             loss = self.criterion(output_masked, labels_masked)
             loss.backward()
@@ -157,5 +159,5 @@ if __name__ == "__main__":
     test_set = None
     test_loader = None
 
-    trainer = Trainer(model=model, criterion=criterion, optimizer=optimizer, train_loader=train_loader, test_loader=test_loader)
+    trainer = Trainer(model=model, criterion=criterion, optimizer=optimizer, device=device, train_loader=train_loader, test_loader=test_loader)
     trainer.train_loop()
