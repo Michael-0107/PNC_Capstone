@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 from Hypers import Config, rating_to_category
 
@@ -90,6 +91,18 @@ def spilt_train_valid(merged_dict, random=False):
         
     return train_dict, test_dict
 
+def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy):
+    plt.plot(train_loss)
+    plt.plot(test_loss)
+    plt.legend(["Train Loss", "Test Loss"])
+    plt.title("Loss")
+    plt.show()
+
+    plt.plot(train_accuracy)
+    plt.plot(test_accuracy)
+    plt.legend(["Train Accuracy", "Test Accuracy"])
+    plt.title("Accuracy")
+    plt.show()
 
 
 if __name__ == "__main__":

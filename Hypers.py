@@ -69,7 +69,7 @@ class Config:
         os.makedirs(log_path)
 
 
-    epochs = 100
+    epochs = 1000
     batch_size = 4
     learning_rate = 0.001
     hidden_size = 128
