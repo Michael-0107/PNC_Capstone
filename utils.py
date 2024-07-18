@@ -3,10 +3,18 @@ import pickle
 import json
 import torch
 import torch.nn.functional as F
+import numpy as np
+import random
 
 from Hypers import Config, rating_to_category
 
-
+def fix_random_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    np.random.seed(seed)
+    random.seed(seed)
 
 def read_dict_json(path):
     with open(path, 'r') as f:
@@ -60,6 +68,27 @@ def custom_collate_fn(batch):
 
     return features_padded, label_padded, mask
 
+
+def spilt_train_valid(merged_dict, random=False):
+    train_dict = {}
+    test_dict = {}
+    if not random:
+        train_length = int(len(merged_dict) * Config.train_ratio)
+        idx = 0
+        for company_name in merged_dict:
+            if idx < train_length:
+                train_dict[company_name] = merged_dict[company_name]
+            else:
+                test_dict[company_name] = merged_dict[company_name]
+            idx += 1
+    else:     
+        for company_name in merged_dict:
+            if random.random() < Config.train_ratio:
+                train_dict[company_name] = merged_dict[company_name]
+            else:
+                test_dict[company_name] = merged_dict[company_name]
+        
+    return train_dict, test_dict
 
 
 

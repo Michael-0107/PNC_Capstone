@@ -49,8 +49,11 @@ rating_to_category = {
     "CC": 19,
     "C": 20,
     "RD": 21,
-    "D": 22
+    "D": 22, 
+    "F3": 23
 }
+
+category_to_rating = {v: k for k, v in rating_to_category.items()}
 
 class Config:
     base_path = os.getcwd()
@@ -71,6 +74,8 @@ class Config:
     learning_rate = 0.001
     hidden_size = 128
     proj_size = len(rating_to_category)
+
+    train_ratio = 0.8
 
 
 

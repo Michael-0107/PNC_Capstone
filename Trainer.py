@@ -123,24 +123,30 @@ class Trainer:
         self.test_loss_history.append(test_loss)
         self.test_acccuracy_history.append(test_accuracy)
 
-        # logging.info(f"Epoch {self.current_epoch}: Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f}, \
-        #              Test Loss: {test_loss:.3f}, Test Accuracy: {test_accuracy:.3f}")
-        record_string = f"Epoch {self.current_epoch}: Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f})"
-        logging.info(record_string)
-        tqdm.write(record_string)
-        
-        # if test_loss < self.best_test_loss:
-        #     self.best_test_loss = test_loss
-        #     self.save_model()
+        logging_string = f"Epoch {self.current_epoch}: Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f}"
+        if test_loss is not None and test_accuracy is not None:
+            logging_string += f", Test Loss: {test_loss:.3f}, Test Accuracy: {test_accuracy:.3f}"
+        logging.info(logging_string)
+        tqdm.write(logging_string)
         
 
-    def train_loop(self):
+        if test_loss is not None and test_loss < self.best_test_loss:
+            self.best_test_loss = test_loss
+            self.save_model()
+        
+
+    def train_loop(self, train_only=False):
         for self.current_epoch in range(Config.epochs):
             train_loss, train_accuracy = self.train_one_epoch()
-            # test_loss, test_accuracy = self.validate_one_epoch()
+
+            test_loss, test_accuracy = None, None
+            if not train_only:
+                test_loss, test_accuracy = self.validate_one_epoch()
 
             # self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
-            self.summarize_one_epoch(train_loss, train_accuracy, None, None)
+            self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
+
+        return self.train_loss_history, self.train_acccuracy_history, self.test_loss_history, self.test_acccuracy_history
     
     def save_model(self):
         torch.save(self.model.state_dict(), os.path.join(Config.model_path, f"model_{self.current_epoch}.pkl"))
