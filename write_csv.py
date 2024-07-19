@@ -1,10 +1,33 @@
 import csv
 import pandas as pd
 
-import csv
+from utils import *
+import transformers
+from transformers import pipeline
+import torch
 
+from huggingface_hub import login
 
+login("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")
 
+df = pd.read_csv('comp.csv')
+
+with torch.no_grad():
+
+    model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+
+    pipeline = transformers.pipeline(
+        "text-generation",
+        model=model_id,
+        model_kwargs={"torch_dtype": torch.float32},
+        device="cuda:0",
+    )
+    for index, row in df.iterrows():
+        if row['news_summary']: continue
+        row['news_summary'] = summarize_news(pipeline, row['company'], row['ticker'], row['startdate'], row['enddate'])
+        if index % 10 == 0:
+            df.to_csv('out.csv', index=False) 
+            
 ### Build base csv from temp.txt
 # q = {
 #     1: ("-01-01", "-03-31"),
