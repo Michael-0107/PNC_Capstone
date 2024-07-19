@@ -67,10 +67,11 @@ class Config:
         os.makedirs(model_path)
     if not os.path.exists(log_path):
         os.makedirs(log_path)
+    
+    seed = 15
 
-
-    epochs = 1000
-    batch_size = 4
+    epochs = 2000
+    batch_size = 8
     learning_rate = 0.001
     hidden_size = 128
     proj_size = len(rating_to_category)

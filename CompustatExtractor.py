@@ -5,6 +5,7 @@ from collections import OrderedDict
 import pickle
 
 from Hypers import Config, feature_list
+import utils
 
 class CompustatExtractor:
     def __init__(self):
@@ -56,25 +57,62 @@ class CompustatExtractor:
             ret_dict[ticker][peroid_str] = feature_tensor
         
         return ret_dict
-        
+
     @staticmethod
     def process_compustat_data(csv_path, save=True, filestem="compustat"):
-        record_df = pd.read_csv(csv_path)
+        record_df = pd.read_csv(csv_path, dtype={"fyearq": str, "fqtr": str})
 
         record_appended = CompustatExtractor.append_financial_ratio(record_df)
         feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended)
 
         if save:
-            CompustatExtractor.save_pickle(feature_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
+            utils.save_pickle(feature_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
 
         return feature_dict
-        
-            
+
+    @staticmethod 
+    def get_ratings_by_quarter(df, start_date='2009-10-01', end_date='2024-03-31'):
+        df = df[(df['datadate'] >= start_date) & (df['datadate'] <= end_date)]
+
+        df['Quarter'] = df['datadate'].dt.to_period('Q')
+
+        quarter_rating_dict = {}
+
+        quarters = pd.period_range(start=start_date, end=end_date, freq='Q')
+
+        for quarter in quarters:
+            quarter_start_date = quarter.start_time
+            closest_dates = df[df['datadate'] < quarter_start_date].sort_values(by='datadate', ascending=False)
+            if not closest_dates.empty:
+                closest_date = closest_dates.iloc[0]
+                quarter_rating_dict[str(quarter)] = closest_date['splticrm']
+
+        return quarter_rating_dict
+
+    @staticmethod
+    def process_compustat_ratings(csv_path, save=True, filestem="ratings"):
+        record_df = pd.read_csv(csv_path, parse_dates=["datadate"])
+        # drop Nan in "splticrm" column
+        record_df = record_df.dropna(subset=["splticrm"])
+        grouped = record_df.groupby("tic")
+
+        ret_rating_dict = {}
+        for ticker, group in grouped:
+            ratings_by_quarter = CompustatExtractor.get_ratings_by_quarter(group)
+            ret_rating_dict[ticker] = ratings_by_quarter
+
+        if save:
+            utils.save_pickle(ret_rating_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
+
+        return ret_rating_dict
 
 if __name__ == "__main__":
-    feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", "Retailer_07041810.csv"), 
-                                                               filestem="Retail_07111221")
-    print(feature_dict)
+    feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", "Features_Extended.csv"),
+                                                                save=True, 
+                                                                filestem="features_extended")
+
+    rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", "Ratings_Extended.csv"), 
+                                                                 save=True, filestem="ratings_extended")
 
 
 

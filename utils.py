@@ -70,10 +70,10 @@ def custom_collate_fn(batch):
     return features_padded, label_padded, mask
 
 
-def spilt_train_valid(merged_dict, random=False):
+def spilt_train_valid(merged_dict, random_select=False, save=True):
     train_dict = {}
     test_dict = {}
-    if not random:
+    if not random_select:
         train_length = int(len(merged_dict) * Config.train_ratio)
         idx = 0
         for company_name in merged_dict:
@@ -88,7 +88,11 @@ def spilt_train_valid(merged_dict, random=False):
                 train_dict[company_name] = merged_dict[company_name]
             else:
                 test_dict[company_name] = merged_dict[company_name]
-        
+    
+    if save:
+        save_pickle(train_dict, os.path.join(Config.data_path, "train_dict.pkl"))
+        save_pickle(test_dict, os.path.join(Config.data_path, "test_dict.pkl"))
+
     return train_dict, test_dict
 
 def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy):
@@ -106,9 +110,10 @@ def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy):
 
 
 if __name__ == "__main__":
-    output_dict = read_dict_json(os.path.join(Config.data_path, "retail_ratings.json"))
-    input_dict = load_pickle(os.path.join(Config.data_path, "Retail_07111221.pkl"))
+
+    input_dict = load_pickle(os.path.join(Config.data_path, "features_extended.pkl"))
+    output_dict = load_pickle(os.path.join(Config.data_path, "ratings_extended.pkl"))
 
     merged_dict = merge_input_output_dicts(input_dict, output_dict)
-    save_pickle(merged_dict, os.path.join(Config.data_path, "merged_dict.pkl"))
+    save_pickle(merged_dict, os.path.join(Config.data_path, "features_ratings_extended.pkl"))
     

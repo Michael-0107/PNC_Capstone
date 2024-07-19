@@ -32,15 +32,18 @@ class Trainer:
         self.train_acccuracy_history = []
         self.test_loss_history = []
         self.test_acccuracy_history = []
+        self.progress_bar = tqdm(range(Config.epochs))
         
 
     def train_one_epoch(self):
         loss_record = []
-        accuracy_record = []
+        hit_accumulated = 0
+        total_accumulated = 0
+
+        self.model.train()
         
-        process_bar = tqdm(self.train_loader)
-        process_bar.set_description(f"Epoch {self.current_epoch}")
-        for idx, (features_b, labels_b, mask_b) in enumerate(process_bar):
+        self.progress_bar.set_description(f"Train Epoch {self.current_epoch}")
+        for idx, (features_b, labels_b, mask_b) in enumerate(self.train_loader):
             self.optimizer.zero_grad()
             # features_b: (B, L, len(features))
             # labels_b: (B, L)
@@ -72,22 +75,24 @@ class Trainer:
             loss_record.append(loss.item())
 
             pred = torch.argmax(output_masked, dim=1)
-            accuracy = (pred == labels_masked).sum() / len(labels_masked)
-            accuracy_record.append(accuracy.item())
+            hit_count = (pred == labels_masked).sum().item()
+            hit_accumulated += hit_count
+            total_accumulated += len(labels_masked)
 
-            process_bar.set_postfix_str(f"Loss: {loss.item():.3f}, Accuracy: {accuracy.item():.3f}")
+            self.progress_bar.set_postfix_str(f"Loss: {sum(loss_record)/len(loss_record):.3f}")
         
-        return sum(loss_record)/len(loss_record), sum(accuracy_record)/len(accuracy_record)
+        return sum(loss_record)/len(loss_record), hit_accumulated/total_accumulated
 
 
     def validate_one_epoch(self):
         loss_record = []
-        accuracy_record = []
+        hit_accumulated = 0
+        total_accumulated = 0
 
-        process_bar = tqdm(self.test_loader)
-        process_bar.set_description(f"Epoch {self.current_epoch}")
+        self.model.eval()
+        self.progress_bar.set_description(f"Vaild Epoch {self.current_epoch}")
         with torch.no_grad():
-            for idx, (features_b, labels_b, mask_b) in enumerate(process_bar):
+            for idx, (features_b, labels_b, mask_b) in enumerate(self.test_loader):
                 features_b = features_b.to(self.device)
                 labels_b = labels_b.to(self.device)
                 mask_b = mask_b.to(self.device)
@@ -110,12 +115,13 @@ class Trainer:
                 # Statistics
                 loss_record.append(loss.item())
                 pred = torch.argmax(output_masked, dim=1)
-                accuracy = (pred == labels_masked).sum() / len(labels_masked)
-                accuracy_record.append(accuracy.item())
+                hit_count = (pred == labels_masked).sum().item()
+                hit_accumulated += hit_count
+                total_accumulated += len(labels_masked)
 
-                process_bar.set_postfix_str(f"Loss: {loss.item():.3f}, Accuracy: {accuracy.item():.3f}")
+                self.progress_bar.set_postfix_str(f"Loss: {sum(loss_record)/len(loss_record):.3f}")
 
-        return sum(loss_record)/len(loss_record), sum(accuracy_record)/len(accuracy_record)
+        return sum(loss_record)/len(loss_record), hit_accumulated/total_accumulated
     
     
     def summarize_one_epoch(self, train_loss, train_accuracy, test_loss, test_accuracy):
@@ -128,7 +134,6 @@ class Trainer:
         if test_loss is not None and test_accuracy is not None:
             logging_string += f", Test Loss: {test_loss:.3f}, Test Accuracy: {test_accuracy:.3f}"
         logging.info(logging_string)
-        tqdm.write(logging_string)
         
 
         if test_loss is not None and test_loss < self.best_test_loss:
@@ -137,14 +142,13 @@ class Trainer:
         
 
     def train_loop(self, train_only=False):
-        for self.current_epoch in range(Config.epochs):
+        for self.current_epoch in self.progress_bar:
             train_loss, train_accuracy = self.train_one_epoch()
 
             test_loss, test_accuracy = None, None
             if not train_only:
                 test_loss, test_accuracy = self.validate_one_epoch()
-
-            # self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
+                
             self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
 
         return self.train_loss_history, self.train_acccuracy_history, self.test_loss_history, self.test_acccuracy_history
