@@ -25,7 +25,7 @@ with torch.no_grad():
         device="cuda:0",
     )
     for index, row in df.iterrows():
-        if row['news_summary'] != 0: continue
+        if row['news_summary'] != '0': continue
         try:
             df.at[index, 'news_summary'] = summarize_news(pipeline, row['company'], row['ticker'], row['startdate'], row['enddate'])
         except:
