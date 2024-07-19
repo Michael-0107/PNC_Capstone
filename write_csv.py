@@ -25,13 +25,13 @@ with torch.no_grad():
         device="cuda:0",
     )
     for index, row in df.iterrows():
-        if row['news_summary']: continue
+        if row['news_summary'] != 0: continue
         try:
             df.at[index, 'news_summary'] = summarize_news(pipeline, row['company'], row['ticker'], row['startdate'], row['enddate'])
         except:
             df.at[index, 'news_summary'] = "There are no information of this company for this quarter."
-        if index == 10:
-            df.to_csv('comp.csv', index=False) 
+        if index % 10 == 0:
+            df.to_csv('comp.csv', index=False)
 
             
 ### Build base csv from temp.txt
