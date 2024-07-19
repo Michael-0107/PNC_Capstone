@@ -2,7 +2,7 @@ import yfinance as yf
 from gdeltdoc import GdeltDoc, Filters
 import urllib3
 from bs4 import BeautifulSoup
-from openai import OpenAI
+from tqdm import tqdm
 
 def get_3_sheet(ticker, period="5y"):
 
@@ -50,17 +50,25 @@ def get_news(company, ticker, startdate, enddate):
 
     gd = GdeltDoc()
 
+    if '.' in ticker:
+        tckl = ticker.split('.')
+        ticker = tckl[0]
+
     f = Filters(
-        keyword = company,
+        keyword = "NYSE:{}".format(ticker),
         start_date = startdate,
         end_date = enddate,
         num_records=50
     )
 
     articles = gd.article_search(f)
+    if len(articles) == 0:
+        print("There are no articles about this company.")
+        return []
 
     fulltext = []
 
+    print("Crawling news...")
     for index, row in articles.iterrows():
         link = row["url"]
         date = row["seendate"]
@@ -68,10 +76,10 @@ def get_news(company, ticker, startdate, enddate):
         try:
             http = urllib3.PoolManager()
             response=http.request('GET', link)
-            print('Request succeeded: ', response.status)
+            # print('Request succeeded: ', response.status)
             soup = BeautifulSoup(response.data, 'html.parser')
         except urllib3.exceptions.HTTPError as e:
-            print('Request failed: ', e.reason)
+            # print('Request failed: ', e.reason)
             continue
 
         for script in soup(["script", "style"]):
@@ -85,48 +93,39 @@ def get_news(company, ticker, startdate, enddate):
         # break multi-headlines into a line each
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         # drop blank lines and short lines
-        text = [chunk for chunk in chunks if len(chunk)>200 and (company in chunk or ticker in chunk)]
+        if ticker:
+            text = [chunk for chunk in chunks if len(chunk)>200 and (company in chunk or ticker in chunk)]
+        else:
+            text = [chunk for chunk in chunks if len(chunk)>200 and company in chunk]
+        # text = [chunk for chunk in chunks if len(chunk)>200]
         # text = '\n'.join(chunk for chunk in chunks if len(chunk)>200)
         for t in text:
             fulltext.append('[{}] {}'.format(date[:8],t))
+
+    length = [len(news) for news in fulltext]
+    total_length = sum(length)
+    while total_length > 40000 or len(fulltext) > 100:
+        fulltext.pop()
+        total_length -= length.pop()
         
     fulltext.sort(key=lambda x: x[1:9])
+    print("Got {} News!".format(len(fulltext)))
+    print("Total length: {}".format(total_length))
     
     return fulltext
 
-def summarize(text):
+def summarize_news(pipeline, company, ticker, startdate, enddate):
 
-    """
-    Input:
-        fulltext: A list of news with a header of date, e.g.: [ [20231024] Nvidia is doing good.,
-                                                                [20231030] NVDA...,
-                                                                ....
-                                                                ]
-    Output:
-        The text of the summarization
-    """    
-    ## NOTE ##
-    # 1. Please make sure the input token number is not larger than the model token limitation
-    #       GPT-4o:         < 128k tokens, input $5 per 1M tokens, output $15 per 1M tokens
-    #       GPT-4 Turbo:    < 128k tokens, input $10 per 1M tokens, output $30 per 1M tokens
-    #       GPT-3.5 Turbo:  < 16k tokens, input $0.5 per 1M tokens, output $1.5 per 1M tokens
-    # 2. Set the API Key before inferencing
-    #   API link: https://platform.openai.com/docs/quickstart/account-setup
-    #   Tutorial: https://www.datacamp.com/tutorial/gpt4o-api-openai-tutorial
+    news_list = get_news(company, ticker, startdate, enddate)
+    if not news_list:
+        return "There are no information of this company for this quarter."
+    new_all = []
 
-    client = OpenAI(api_key="your_api_key_here")
+    for news in tqdm(news_list):
+        sub_news = pipeline("Please summarize the following news in 30 words.\nNews:{}\nSummary: ".format(news), max_new_tokens=40, do_sample=False, return_full_text=False, pad_token_id=pipeline.tokenizer.eos_token_id)[0]['generated_text']
+        new_all.append(sub_news)
 
-    MODEL="gpt-3.5-turbo"
+    output = pipeline("You're a finance expert and you are sharing some thoughts based on the news within a quarter. Please read all the news and write a summarization of this company in this quarter.\nNews:{}\nSummary: ".format(new_all), max_new_tokens=128, do_sample=False, return_full_text=False, pad_token_id=pipeline.tokenizer.eos_token_id, eos_token_id=pipeline.tokenizer.eos_token_id)
 
-    summarization = client.chat.completions.create(
-        model=MODEL,
-        # Haven't tested yet, please check the results for some companies before inferencing all the companies
-        messages=[
-            {"role": "system", "content": "Summarize the following information in 100 words, the number in the bracket stands for the date."},
-            {"role": "user", "content": "\n".join(text)}
-        ]
-    )
-
-    print("Assistant: " + summarization.choices[0].message.content)
-
-    return summarization.choices[0].message.content
+    last_period = output[0]['generated_text'].rfind('.')
+    return output[0]['generated_text'][:last_period+1]
