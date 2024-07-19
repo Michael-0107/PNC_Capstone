@@ -72,8 +72,8 @@ class Config:
 
     epochs = 2000
     batch_size = 8
-    learning_rate = 0.001
-    hidden_size = 128
+    learning_rate = 0.01
+    hidden_size = 64
     proj_size = len(rating_to_category)
 
     train_ratio = 0.8
