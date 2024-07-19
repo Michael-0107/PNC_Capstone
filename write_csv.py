@@ -1,5 +1,6 @@
 import csv
 import pandas as pd
+import numpy as np
 
 from utils import *
 import transformers
@@ -10,6 +11,7 @@ from huggingface_hub import login
 
 login("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")
 
+print("Company Info read from CSV file")
 df = pd.read_csv('comp.csv')
 
 with torch.no_grad():
@@ -24,9 +26,13 @@ with torch.no_grad():
     )
     for index, row in df.iterrows():
         if row['news_summary']: continue
-        row['news_summary'] = summarize_news(pipeline, row['company'], row['ticker'], row['startdate'], row['enddate'])
-        if index % 10 == 0:
-            df.to_csv('out.csv', index=False) 
+        try:
+            df.at[index, 'news_summary'] = summarize_news(pipeline, row['company'], row['ticker'], row['startdate'], row['enddate'])
+        except:
+            df.at[index, 'news_summary'] = "There are no information of this company for this quarter."
+        if index == 10:
+            df.to_csv('comp.csv', index=False) 
+
             
 ### Build base csv from temp.txt
 # q = {
