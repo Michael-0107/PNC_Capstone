@@ -22,7 +22,7 @@ def read_dict_json(path):
         return json.load(f)
     
 
-def merge_input_output_dicts(input_dict, output_dict):
+def merge_input_output_dicts(input_dict, output_dict, verbose=True):
     merged_dict = {}
     for company_name in output_dict:
         if not company_name in input_dict:
@@ -42,6 +42,11 @@ def merge_input_output_dicts(input_dict, output_dict):
 
             merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]))
     
+    if verbose:
+        print(f"input_dict: {len(input_dict)}")
+        print(f"output_dict: {len(output_dict)}")
+        print(f"merged_dict: {len(merged_dict)}")
+
     return merged_dict
 
 
@@ -111,9 +116,9 @@ def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy):
 
 if __name__ == "__main__":
 
-    input_dict = load_pickle(os.path.join(Config.data_path, "features_extended.pkl"))
+    input_dict = load_pickle(os.path.join(Config.data_path, "features_extended_normalized_dict.pkl"))
     output_dict = load_pickle(os.path.join(Config.data_path, "ratings_extended.pkl"))
 
     merged_dict = merge_input_output_dicts(input_dict, output_dict)
-    save_pickle(merged_dict, os.path.join(Config.data_path, "features_ratings_extended.pkl"))
+    save_pickle(merged_dict, os.path.join(Config.data_path, "features_normalized_ratings_extended.pkl"))
     

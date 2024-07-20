@@ -1,7 +1,6 @@
 import os
 
-feature_list = [
-    "actq",
+numeric_features = ["actq",
     "ancq", 
     "atq",
     "cheq",
@@ -14,7 +13,10 @@ feature_list = [
     "ppentq",
     "revtq",
     "teqq",
-    "xsgaq",
+    "xsgaq"
+]
+
+derived_features = [
     "GrossProfitRatio",
     "NetProfitRatio",
     "CurrentRatio",
@@ -25,6 +27,8 @@ feature_list = [
     "ReturnOnEquity",
     "InventoryTurnover"
 ]
+
+feature_list = numeric_features + derived_features
 
 rating_to_category = {
     "AAA": 0, 
@@ -72,9 +76,9 @@ class Config:
 
     epochs = 2000
     batch_size = 8
-    learning_rate = 0.01
+    learning_rate = 1e-2
     hidden_size = 64
-    proj_size = len(rating_to_category)
+    proj_size = 1
 
     train_ratio = 0.8
 

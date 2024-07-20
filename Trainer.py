@@ -1,3 +1,4 @@
+from multiprocessing import reduction
 import os
 from numpy import dtype
 import torch
@@ -36,9 +37,9 @@ class Trainer:
         
 
     def train_one_epoch(self):
-        loss_record = []
+        loss_accumulated = 0
         hit_accumulated = 0
-        total_accumulated = 0
+        total_items = 0
 
         self.model.train()
         
@@ -57,37 +58,36 @@ class Trainer:
             h_0 = torch.zeros(1, features_b.shape[0], Config.proj_size).to(self.device) # (directions*num_layers, batch_size, hidden_size if proj_size=0 else proj_size)
             
             output_b, h_end, c_end = self.model(features_b, h_0, c_0)
-            assert output_b.shape == (features_b.shape[0], features_b.shape[1], len(Hypers.rating_to_category)) # (B, L, len(categories))
+            assert output_b.shape == (features_b.shape[0], features_b.shape[1], Config.proj_size)
 
-            output_flat = output_b.reshape(-1, len(Hypers.rating_to_category))
+            output_flat = output_b.reshape(-1)
             labels_flat = labels_b.reshape(-1)
             mask_flat = mask_b.reshape(-1)
 
             output_masked = output_flat[mask_flat == 1]
             labels_masked = labels_flat[mask_flat == 1]
-            labels_masked = labels_masked.to(self.device, dtype=torch.long)
 
             loss = self.criterion(output_masked, labels_masked)
             loss.backward()
             self.optimizer.step()
 
             # Statistics
-            loss_record.append(loss.item())
+            loss_accumulated += loss.item()
 
-            pred = torch.argmax(output_masked, dim=1)
+            pred = torch.round(output_masked)
             hit_count = (pred == labels_masked).sum().item()
             hit_accumulated += hit_count
-            total_accumulated += len(labels_masked)
+            total_items += len(labels_masked)
 
-            self.progress_bar.set_postfix_str(f"Loss: {sum(loss_record)/len(loss_record):.3f}")
+            self.progress_bar.set_postfix_str(f"Loss: {loss_accumulated/total_items:.3f}")
         
-        return sum(loss_record)/len(loss_record), hit_accumulated/total_accumulated
+        return loss_accumulated/total_items, hit_accumulated/total_items
 
 
     def validate_one_epoch(self):
-        loss_record = []
+        loss_accumulated = 0
         hit_accumulated = 0
-        total_accumulated = 0
+        total_items = 0
 
         self.model.eval()
         self.progress_bar.set_description(f"Vaild Epoch {self.current_epoch}")
@@ -100,28 +100,27 @@ class Trainer:
                 c_0 = torch.zeros(1, features_b.shape[0], Config.hidden_size).to(self.device) 
                 h_0 = torch.zeros(1, features_b.shape[0], Config.proj_size).to(self.device) 
                 output_b, h_end, c_end = self.model(features_b,h_0, c_0) 
-                assert output_b.shape == (features_b.shape[0], features_b.shape[1], len(Hypers.rating_to_category)) # (B, L, len(categories))
+                assert output_b.shape == (features_b.shape[0], features_b.shape[1], Config.proj_size) # (B, L, 1)
 
-                output_flat = output_b.reshape(-1, len(Hypers.rating_to_category))
+                output_flat = output_b.reshape(-1)
                 labels_flat = labels_b.reshape(-1)
                 mask_flat = mask_b.reshape(-1)
 
                 output_masked = output_flat[mask_flat == 1]
                 labels_masked = labels_flat[mask_flat == 1]
-                labels_masked = labels_masked.to(self.device, dtype=torch.long)
 
                 loss = self.criterion(output_masked, labels_masked)
 
                 # Statistics
-                loss_record.append(loss.item())
-                pred = torch.argmax(output_masked, dim=1)
+                loss_accumulated += loss.item()
+                pred = torch.round(output_masked)
                 hit_count = (pred == labels_masked).sum().item()
                 hit_accumulated += hit_count
-                total_accumulated += len(labels_masked)
+                total_items += len(labels_masked)
 
-                self.progress_bar.set_postfix_str(f"Loss: {sum(loss_record)/len(loss_record):.3f}")
+                self.progress_bar.set_postfix_str(f"Loss: {loss_accumulated/total_items:.3f}")
 
-        return sum(loss_record)/len(loss_record), hit_accumulated/total_accumulated
+        return loss_accumulated/total_items, hit_accumulated/total_items
     
     
     def summarize_one_epoch(self, train_loss, train_accuracy, test_loss, test_accuracy):
