@@ -105,20 +105,22 @@ def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy):
     plt.plot(test_loss)
     plt.legend(["Train Loss", "Test Loss"])
     plt.title("Loss")
+    plt.grid()
     plt.show()
 
     plt.plot(train_accuracy)
     plt.plot(test_accuracy)
     plt.legend(["Train Accuracy", "Test Accuracy"])
     plt.title("Accuracy")
+    plt.grid()
     plt.show()
 
 
 if __name__ == "__main__":
 
-    input_dict = load_pickle(os.path.join(Config.data_path, "features_extended_normalized_dict.pkl"))
-    output_dict = load_pickle(os.path.join(Config.data_path, "ratings_extended.pkl"))
+    input_dict = load_pickle(os.path.join(Config.data_path, "features_retail_indus_normalized_dict.pkl"))
+    output_dict = load_pickle(os.path.join(Config.data_path, "ratings_retail_indus.pkl"))
 
     merged_dict = merge_input_output_dicts(input_dict, output_dict)
-    save_pickle(merged_dict, os.path.join(Config.data_path, "features_normalized_ratings_extended.pkl"))
+    save_pickle(merged_dict, os.path.join(Config.data_path, "dataset_retail_indus.pkl"))
     

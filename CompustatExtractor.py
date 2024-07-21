@@ -139,12 +139,13 @@ class CompustatExtractor:
         return ret_rating_dict
 
 if __name__ == "__main__":
-    feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", "Features_Extended.csv"),
+    postfix = "retail_indus"
+    feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", f"features_{postfix}.csv"),
                                                                 save=True, 
-                                                                filestem="features_extended")
+                                                                filestem=f"features_{postfix}")
 
-    rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", "Ratings_Extended.csv"), 
-                                                                 save=True, filestem="ratings_extended")
+    rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", f"ratings_{postfix}.csv"), 
+                                                                 save=True, filestem=f"ratings_{postfix}")
 
 
 

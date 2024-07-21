@@ -1,11 +1,13 @@
 import torch
 import torch.nn as nn
 
+from Hypers import Config
+
 
 class PredictorModel(nn.Module):
     def __init__(self, input_size, hidden_size, proj_size=0):
         super(PredictorModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=1, batch_first=True, proj_size=proj_size)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=1, batch_first=True, proj_size=proj_size, dropout=0.2)
 
     def forward(self, x, h, c):
         out, (h_new, c_new) = self.lstm(x, (h, c))
