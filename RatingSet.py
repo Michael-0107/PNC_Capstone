@@ -13,6 +13,8 @@ class RatingSet(Dataset):
 
         self.company_idx_to_name = dict(zip(indicies, companies))
 
+        self.max_seq_len = max([len(entries) for entries in self.merged_dict.values()])
+
 
     def __len__(self):
         return len(self.merged_dict)
@@ -27,7 +29,20 @@ class RatingSet(Dataset):
         labels = torch.stack(labels)
 
         return features, labels
+    
+    @staticmethod
+    def custom_collate_fn(batch):
+        features, labels = zip(*batch)
+        
+        features_padded = torch.nn.utils.rnn.pad_sequence(features, batch_first=True)
+        label_padded = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True)
+        label_padded = label_padded.squeeze(-1)
 
+        mask = torch.zeros((features_padded.shape[0], features_padded.shape[1]))
+        for idx, _ in enumerate(features):
+            mask[idx, 0:len(labels[idx])] = 1
+
+        return features_padded, label_padded, mask
             
     
 if __name__ == "__main__":

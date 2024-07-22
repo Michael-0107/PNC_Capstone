@@ -91,7 +91,7 @@ class CompustatExtractor:
 
         record_appended = CompustatExtractor.append_financial_ratio(record_df)
         if save:
-            record_appended.to_csv(os.path.join(Config.data_path, f"{filestem}_scaler_df.csv"))
+            record_appended.drop_index().to_csv(os.path.join(Config.data_path, f"{filestem}_scaler_df.csv"))
 
         record_appended = CompustatExtractor.normalize_features(record_appended)
         feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended)

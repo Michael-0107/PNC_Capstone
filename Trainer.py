@@ -1,6 +1,4 @@
-from multiprocessing import reduction
 import os
-from numpy import dtype
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -14,7 +12,14 @@ import utils
 
 
 class Trainer:
-    def __init__(self, model, criterion, optimizer, device, train_loader, test_loader) -> None:
+    def __init__(self, 
+                 model=None, 
+                 criterion=None, 
+                 optimizer=None, 
+                 device=None, 
+                 train_loader=None, 
+                 test_loader=None, 
+                 max_seq_len=None) -> None:
         # Training Related
         self.device = device
         self.model = model.to(self.device)
@@ -22,7 +27,10 @@ class Trainer:
         self.optimizer = optimizer
         self.train_loader = train_loader
         self.test_loader = test_loader
+
         self.current_epoch = 0
+        self.max_seq_len = max_seq_len
+        
         # Statistics
         self.start_time = datetime.now().strftime("%m%d%H%M")
         self.logger = logging.getLogger(__name__)
@@ -54,16 +62,12 @@ class Trainer:
             mask_b = mask_b.to(self.device)
 
             # Forward Pass
-            c_0 = torch.zeros(1, features_b.shape[0], Config.hidden_size).to(self.device) # (directions*num_layers, batch_size, hidden_size)
-            h_0 = torch.zeros(1, features_b.shape[0], Config.proj_size).to(self.device) # (directions*num_layers, batch_size, hidden_size if proj_size=0 else proj_size)
-            
-            output_b, h_end, c_end = self.model(features_b, h_0, c_0)
-            assert output_b.shape == (features_b.shape[0], features_b.shape[1], Config.proj_size)
+            output_b = self.model(features_b)
 
             output_flat = output_b.reshape(-1)
             labels_flat = labels_b.reshape(-1)
             mask_flat = mask_b.reshape(-1)
-
+            
             output_masked = output_flat[mask_flat == 1]
             labels_masked = labels_flat[mask_flat == 1]
 
@@ -97,14 +101,12 @@ class Trainer:
                 labels_b = labels_b.to(self.device)
                 mask_b = mask_b.to(self.device)
 
-                c_0 = torch.zeros(1, features_b.shape[0], Config.hidden_size).to(self.device) 
-                h_0 = torch.zeros(1, features_b.shape[0], Config.proj_size).to(self.device) 
-                output_b, h_end, c_end = self.model(features_b,h_0, c_0) 
-                assert output_b.shape == (features_b.shape[0], features_b.shape[1], Config.proj_size) # (B, L, 1)
+                output_b = self.model(features_b) 
 
                 output_flat = output_b.reshape(-1)
                 labels_flat = labels_b.reshape(-1)
                 mask_flat = mask_b.reshape(-1)
+
 
                 output_masked = output_flat[mask_flat == 1]
                 labels_masked = labels_flat[mask_flat == 1]
@@ -156,18 +158,30 @@ class Trainer:
         torch.save(self.model.state_dict(), os.path.join(Config.model_path, f"model_{self.start_time}.ckpt"))
 
 if __name__ == "__main__":
+    from RatingSet import RatingSet
+    train_dict = utils.load_pickle(os.path.join(Config.data_path, "train_dict.pkl"))
+    test_dict = utils.load_pickle(os.path.join(Config.data_path, "test_dict.pkl"))
+    train_set = RatingSet(train_dict)
+    test_set = RatingSet(test_dict)
+    train_loader = DataLoader(train_set, batch_size=Config.batch_size, shuffle=True, collate_fn=RatingSet.custom_collate_fn)
+    test_loader = DataLoader(test_set, batch_size=Config.batch_size, shuffle=True, collate_fn=RatingSet.custom_collate_fn)
+    max_seq_len = max_seq_len = max(max([len(entries) for entries in train_dict.values()]), max([len(entries) for entries in test_dict.values()]))
+
+
     from PredictorModel import PredictorModel
-    model = PredictorModel(input_size=len(Hypers.feature_list), hidden_size=Config.hidden_size, proj_size=len(Hypers.rating_to_category))
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    model = PredictorModel(input_size=len(Hypers.feature_list), 
+                            hidden_size=Hypers.Config.hidden_size,
+                            num_layers=max_seq_len,
+                            proj_size=Hypers.Config.proj_size)
+    criterion = nn.MSELoss(reduction="sum")
+    optimizer = torch.optim.Adam(model.parameters(), lr=Config.learning_rate)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    from RatingSet import RatingSet
-    merged_dict = utils.load_pickle(os.path.join(Hypers.Config.data_path, "merged_dict.pkl"))
-    train_set = RatingSet(merged_dict)
-    train_loader = DataLoader(train_set, batch_size=Config.batch_size, shuffle=True, collate_fn=utils.custom_collate_fn)
-    test_set = None
-    test_loader = None
-
-    trainer = Trainer(model=model, criterion=criterion, optimizer=optimizer, device=device, train_loader=train_loader, test_loader=test_loader)
+    trainer = Trainer(model=model, 
+                      criterion=criterion, 
+                      optimizer=optimizer, 
+                      device=device, 
+                      train_loader=train_loader, 
+                      test_loader=test_loader, 
+                      max_seq_len=max_seq_len)
     trainer.train_loop()

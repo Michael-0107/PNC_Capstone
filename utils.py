@@ -60,20 +60,6 @@ def load_pickle(load_path):
         return pickle.load(handle)
 
 
-def custom_collate_fn(batch):
-    features, labels = zip(*batch)
-    
-    features_padded = torch.nn.utils.rnn.pad_sequence(features, batch_first=True)
-    label_padded = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True)
-    label_padded = label_padded.squeeze(-1)
-
-    mask = torch.zeros((features_padded.shape[0], features_padded.shape[1]))
-    for idx, _ in enumerate(features):
-        mask[idx, 0:len(labels[idx])] = 1
-
-
-    return features_padded, label_padded, mask
-
 
 def spilt_train_valid(merged_dict, random_select=False, save=True):
     train_dict = {}
