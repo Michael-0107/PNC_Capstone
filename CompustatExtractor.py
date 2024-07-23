@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from sympy import ComputationFailed
 import torch
 from collections import OrderedDict
 import pickle
@@ -52,7 +53,7 @@ class CompustatExtractor:
         return record_filled
 
     @staticmethod
-    def get_feature_tensor_dict(record_df: pd.DataFrame) -> OrderedDict:
+    def get_feature_tensor_dict(record_df: pd.DataFrame, target_features=None) -> OrderedDict:
         record_sorted_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[False, True, True]).copy()
 
         ret_dict = OrderedDict()
@@ -64,8 +65,10 @@ class CompustatExtractor:
             # check no Nan in row
             # if (row.isnull().sum() != 0):
             #     continue
-            
-            features = [row[feature_name] for feature_name in feature_list]
+            if target_features is None: 
+                features = [row[feature_name] for feature_name in feature_list]
+            else:
+                features = [row[feature_name] for feature_name in target_features]
 
             if ticker not in ret_dict:
                 ret_dict[ticker] = {}
@@ -73,20 +76,21 @@ class CompustatExtractor:
             peroid_str = f"{year}Q{quarter}"
 
             feature_tensor = torch.tensor(features)
-            assert(feature_tensor.shape[0] == len(feature_list))
             ret_dict[ticker][peroid_str] = feature_tensor
         
         return ret_dict
 
     @staticmethod
-    def normalize_features(record_df):
-        for feature_name in feature_list:
+    def normalize_features(record_df, target_cols=None):
+        if target_cols is None:
+            target_cols = feature_list
+        for feature_name in target_cols:
             record_df[feature_name] = RobustScaler().fit_transform(record_df[[feature_name]])
         return record_df
 
     @staticmethod
     def process_compustat_data(csv_path, save=True, filestem="compustat"):
-        record_df = pd.read_csv(csv_path, dtype={"fyearq": str, "fqtr": str})
+        record_df = pd.read_csv(csv_path, dtype={"fyearq": int, "fqtr": int})
         record_df = record_df.dropna(axis=0, how='any', subset=['tic', 'fyearq', 'fqtr']+numeric_features)
 
         record_appended = CompustatExtractor.append_financial_ratio(record_df)
@@ -137,15 +141,46 @@ class CompustatExtractor:
             utils.save_pickle(ret_rating_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
 
         return ret_rating_dict
+    
+    
+    @staticmethod
+    def process_compustat_omni(csv_path, feature_list_path, save=True, filestem="omni", verbose=True):
+        float_features = []
+        with open(feature_list_path, 'r') as f:
+            for line in f:
+                float_features.append(line.strip())
+
+        record_df = pd.read_csv(csv_path, parse_dates=["datadate"], dtype={"fyearq": int, "fqtr": int})
+        float_features.remove("fyearq")
+        float_features.remove("fqtr")
+
+        # find columns in feature_list
+        feature_cols = [col for col in record_df.columns if col in float_features]
+        if verbose:
+            print(f"len(feature_cols): {len(feature_cols)}")
+            print(feature_cols)
+
+        record_df = record_df[["tic", "fyearq", "fqtr"] + feature_cols]
+        record_df = CompustatExtractor.normalize_features(record_df, target_cols=feature_cols)
+
+        features_dict = CompustatExtractor.get_feature_tensor_dict(record_df, target_features=feature_cols)
+
+        if save:
+            utils.save_pickle(features_dict, os.path.join(Config.data_path, f"features_{filestem}.pkl"))
+
+        return features_dict
+        
 
 if __name__ == "__main__":
-    postfix = "retail_indus"
-    feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", f"features_{postfix}.csv"),
-                                                                save=True, 
-                                                                filestem=f"features_{postfix}")
+    # postfix = "retail_indus"
+    # feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", f"features_{postfix}.csv"),
+    #                                                             save=True, 
+    #                                                             filestem=f"features_{postfix}")
 
-    rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", f"ratings_{postfix}.csv"), 
-                                                                 save=True, filestem=f"ratings_{postfix}")
+    # rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", f"ratings_{postfix}.csv"), 
+    #                                                              save=True, filestem=f"ratings_{postfix}")
+    CompustatExtractor.process_compustat_omni(os.path.join(Config.data_path, "WRDS", "cleaned_financial_data.csv"),
+                                               os.path.join(Config.data_path, "WRDS", "float_features.txt"))
 
 
 
