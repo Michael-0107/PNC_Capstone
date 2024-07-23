@@ -1,19 +1,5 @@
 import os
-import pandas as pd
-from collections import OrderedDict
-import pickle
-import torch
-
 from utils import *
-from Hypers import Config
-
-def expand_quarter(filepath):
-
-    data = load_pickle(filepath)
-    print(list(data.values())[0]['2009Q4'])
-
-    return
-
 import pickle
 from collections import OrderedDict
 import torch
@@ -27,12 +13,12 @@ def concatenate_features(data, k=4):
         feature_length = next(iter(time_feature_dict.values())).shape[0]  # Assuming all features have the same length
 
         for i, current_time in enumerate(sorted_times):
-            start_index = max(0, i - 3)
+            start_index = max(0, i - k + 1)
             features_to_concatenate = [time_feature_dict[sorted_times[j]] for j in range(start_index, i + 1)]
             
-            # If there are less than 4 quarters, pad with zeros
-            if len(features_to_concatenate) < 4:
-                padding_count = 4 - len(features_to_concatenate)
+            # If there are less than k quarters, pad with zeros
+            if len(features_to_concatenate) < k:
+                padding_count = k - len(features_to_concatenate)
                 padding_tensors = [torch.zeros(feature_length) for _ in range(padding_count)]
                 features_to_concatenate = padding_tensors + features_to_concatenate
 
