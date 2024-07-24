@@ -18,7 +18,7 @@ class Trainer:
                  optimizer=None, 
                  device=None, 
                  train_loader=None, 
-                 test_loader=None, 
+                 valid_loader=None, 
                  max_seq_len=None) -> None:
         # Training Related
         self.device = device
@@ -26,7 +26,7 @@ class Trainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.train_loader = train_loader
-        self.test_loader = test_loader
+        self.valid_loader = valid_loader
 
         self.current_epoch = 0
         self.max_seq_len = max_seq_len
@@ -36,11 +36,11 @@ class Trainer:
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(filename=os.path.join(Config.log_path, f"train_{self.start_time}.log"), level=logging.INFO)
 
-        self.best_test_loss = torch.inf
+        self.best_valid_loss = torch.inf
         self.train_loss_history = []
         self.train_acccuracy_history = []
-        self.test_loss_history = []
-        self.test_acccuracy_history = []
+        self.valid_loss_history = []
+        self.valid_acccuracy_history = []
         self.progress_bar = tqdm(range(Config.epochs))
         
 
@@ -96,7 +96,7 @@ class Trainer:
         self.model.eval()
         self.progress_bar.set_description(f"Vaild Epoch {self.current_epoch}")
         with torch.no_grad():
-            for idx, (features_b, labels_b, mask_b) in enumerate(self.test_loader):
+            for idx, (features_b, labels_b, mask_b) in enumerate(self.valid_loader):
                 features_b = features_b.to(self.device)
                 labels_b = labels_b.to(self.device)
                 mask_b = mask_b.to(self.device)
@@ -125,20 +125,20 @@ class Trainer:
         return loss_accumulated/total_items, hit_accumulated/total_items
     
     
-    def summarize_one_epoch(self, train_loss, train_accuracy, test_loss, test_accuracy):
+    def summarize_one_epoch(self, train_loss, train_accuracy, valid_loss, valid_accuracy):
         self.train_loss_history.append(train_loss)
         self.train_acccuracy_history.append(train_accuracy)
-        self.test_loss_history.append(test_loss)
-        self.test_acccuracy_history.append(test_accuracy)
+        self.valid_loss_history.append(valid_loss)
+        self.valid_acccuracy_history.append(valid_accuracy)
 
         logging_string = f"Epoch {self.current_epoch}: Train Loss: {train_loss:.3f}, Train Accuracy: {train_accuracy:.3f}"
-        if test_loss is not None and test_accuracy is not None:
-            logging_string += f", Test Loss: {test_loss:.3f}, Test Accuracy: {test_accuracy:.3f}"
+        if valid_loss is not None and valid_accuracy is not None:
+            logging_string += f", valid Loss: {valid_loss:.3f}, valid Accuracy: {valid_accuracy:.3f}"
         logging.info(logging_string)
         
 
-        if test_loss is not None and test_loss < self.best_test_loss:
-            self.best_test_loss = test_loss
+        if valid_loss is not None and valid_loss < self.best_valid_loss:
+            self.best_valid_loss = valid_loss
             self.save_model()
         
 
@@ -146,13 +146,13 @@ class Trainer:
         for self.current_epoch in self.progress_bar:
             train_loss, train_accuracy = self.train_one_epoch()
 
-            test_loss, test_accuracy = None, None
+            valid_loss, valid_accuracy = None, None
             if not train_only:
-                test_loss, test_accuracy = self.validate_one_epoch()
+                valid_loss, valid_accuracy = self.validate_one_epoch()
                 
-            self.summarize_one_epoch(train_loss, train_accuracy, test_loss, test_accuracy)
+            self.summarize_one_epoch(train_loss, train_accuracy, valid_loss, valid_accuracy)
 
-        return self.train_loss_history, self.train_acccuracy_history, self.test_loss_history, self.test_acccuracy_history
+        return self.train_loss_history, self.train_acccuracy_history, self.valid_loss_history, self.valid_acccuracy_history
     
     def save_model(self):
         torch.save(self.model.state_dict(), os.path.join(Config.model_path, f"model_{self.start_time}.ckpt"))
@@ -160,11 +160,11 @@ class Trainer:
 if __name__ == "__main__":
     from RatingSet import RatingSet
     train_dict = utils.load_pickle(os.path.join(Config.data_path, "train_dict.pkl"))
-    test_dict = utils.load_pickle(os.path.join(Config.data_path, "test_dict.pkl"))
+    valid_dict = utils.load_pickle(os.path.join(Config.data_path, "test_dict.pkl"))
     train_set = RatingSet(train_dict)
-    test_set = RatingSet(test_dict)
+    valid_set = RatingSet(valid_dict)
     train_loader = DataLoader(train_set, batch_size=Config.batch_size, shuffle=True, collate_fn=RatingSet.custom_collate_fn)
-    test_loader = DataLoader(test_set, batch_size=Config.batch_size, shuffle=True, collate_fn=RatingSet.custom_collate_fn)
+    valid_loader = DataLoader(valid_set, batch_size=Config.batch_size, shuffle=True, collate_fn=RatingSet.custom_collate_fn)
     max_seq_len = max_seq_len = max(max([len(entries) for entries in train_dict.values()]), max([len(entries) for entries in test_dict.values()]))
 
 
@@ -182,6 +182,6 @@ if __name__ == "__main__":
                       optimizer=optimizer, 
                       device=device, 
                       train_loader=train_loader, 
-                      test_loader=test_loader, 
+                      valid_loader=valid_loader, 
                       max_seq_len=max_seq_len)
     trainer.train_loop()

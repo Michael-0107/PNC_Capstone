@@ -106,7 +106,7 @@ class CompustatExtractor:
         return feature_dict
 
     @staticmethod 
-    def get_ratings_by_quarter(df, start_date='2009-10-01', end_date='2024-03-31'):
+    def get_ratings_by_quarter(df, start_date='2010-01-01', end_date='2017-01-01'):
         df = df[(df['datadate'] >= start_date) & (df['datadate'] <= end_date)]
 
         # df['Quarter'] = df['datadate'].dt.to_period('Q')
@@ -124,6 +124,7 @@ class CompustatExtractor:
                 quarter_rating_dict[str(quarter)] = closest_date['splticrm']
 
         return quarter_rating_dict
+
 
     @staticmethod
     def process_compustat_ratings(csv_path, save=True, filestem="ratings"):
@@ -172,15 +173,15 @@ class CompustatExtractor:
         
 
 if __name__ == "__main__":
-    # postfix = "retail_indus"
+    postfix = "retail_indus"
     # feature_dict = CompustatExtractor().process_compustat_data(os.path.join(Config.data_path, "WRDS", f"features_{postfix}.csv"),
     #                                                             save=True, 
     #                                                             filestem=f"features_{postfix}")
-
-    # rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", f"ratings_{postfix}.csv"), 
-    #                                                              save=True, filestem=f"ratings_{postfix}")
-    CompustatExtractor.process_compustat_omni(os.path.join(Config.data_path, "WRDS", "cleaned_financial_data.csv"),
-                                               os.path.join(Config.data_path, "WRDS", "float_features.txt"))
+    
+    rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", f"ratings_{postfix}.csv"), 
+                                                                 save=True, filestem=f"ratings_{postfix}")
+    # CompustatExtractor.process_compustat_omni(os.path.join(Config.data_path, "WRDS", "cleaned_financial_data.csv"),
+    #                                            os.path.join(Config.data_path, "WRDS", "float_features.txt"))
 
 
 

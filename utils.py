@@ -61,7 +61,7 @@ def load_pickle(load_path):
 
 
 
-def spilt_train_valid(merged_dict, random_select=False, save=True):
+def spilt_train_valid(merged_dict, random_select=False, save=True, suffix=None):
     train_dict = {}
     test_dict = {}
     if not random_select:
@@ -81,32 +81,36 @@ def spilt_train_valid(merged_dict, random_select=False, save=True):
                 test_dict[company_name] = merged_dict[company_name]
     
     if save:
-        save_pickle(train_dict, os.path.join(Config.data_path, "train_dict.pkl"))
-        save_pickle(test_dict, os.path.join(Config.data_path, "test_dict.pkl"))
+        if suffix is not None:
+            save_pickle(train_dict, os.path.join(Config.data_path, f"train_dict_{suffix}.pkl"))
+            save_pickle(test_dict, os.path.join(Config.data_path, f"test_dict_{suffix}.pkl"))
+        else:
+            save_pickle(train_dict, os.path.join(Config.data_path, "train_dict.pkl"))
+            save_pickle(test_dict, os.path.join(Config.data_path, "test_dict.pkl"))
 
     return train_dict, test_dict
 
-def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy):
+def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy, identifier:str=""):
     plt.plot(train_loss)
     plt.plot(test_loss)
     plt.legend(["Train Loss", "Test Loss"])
-    plt.title("Loss")
+    plt.title(f"Loss, {identifier}")
     plt.grid()
     plt.show()
 
     plt.plot(train_accuracy)
     plt.plot(test_accuracy)
     plt.legend(["Train Accuracy", "Test Accuracy"])
-    plt.title("Accuracy")
+    plt.title(f"Accuracy, {identifier}")
     plt.grid()
     plt.show()
 
 
 if __name__ == "__main__":
 
-    input_dict = load_pickle(os.path.join(Config.data_path, "features_retail_indus_normalized_dict.pkl"))
+    input_dict = load_pickle(os.path.join(Config.data_path, "features_omni_4.pkl"))
     output_dict = load_pickle(os.path.join(Config.data_path, "ratings_retail_indus.pkl"))
 
     merged_dict = merge_input_output_dicts(input_dict, output_dict)
-    save_pickle(merged_dict, os.path.join(Config.data_path, "dataset_retail_indus.pkl"))
+    save_pickle(merged_dict, os.path.join(Config.data_path, "dataset_omni_4.pkl"))
     

@@ -74,9 +74,9 @@ class Config:
     
     seed = 15
 
-    epochs = 250
-    batch_size = 16
-    learning_rate = 5e-4
+    epochs = 500
+    batch_size = 32
+    learning_rate = 1e-3
     hidden_size = 256
     proj_size = 0
 

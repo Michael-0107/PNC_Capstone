@@ -42,8 +42,8 @@ if __name__ == "__main__":
 
     k = 4
     # Example usage
-    input_file_path = os.path.join(Config.data_path, "features_retail_indus_normalized_dict.pkl")
-    output_file_path = os.path.join(Config.data_path, "features_retail_indus_normalized_dict_{}.pkl".format(k))
+    input_file_path = os.path.join(Config.data_path, "features_omni.pkl")
+    output_file_path = os.path.join(Config.data_path, "features_omni_{}.pkl".format(k))
 
     data = load_pickle(input_file_path)
     new_data = concatenate_features(data, k)
