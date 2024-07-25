@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 
 from Hypers import Config
 
-class RatingSet(Dataset):
+class LSTMDataset(Dataset):
     def __init__(self, merged_dict):
         self.merged_dict = merged_dict
         
@@ -46,4 +46,4 @@ class RatingSet(Dataset):
             
     
 if __name__ == "__main__":
-    RatingSet()
+    pass
