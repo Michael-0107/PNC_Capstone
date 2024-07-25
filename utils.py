@@ -107,10 +107,10 @@ def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy, identifier:
 
 
 if __name__ == "__main__":
-
-    input_dict = load_pickle(os.path.join(Config.data_path, "features_omni_4.pkl"))
-    output_dict = load_pickle(os.path.join(Config.data_path, "ratings_retail_indus.pkl"))
+    postfix = "RetInd"
+    input_dict = load_pickle(os.path.join(Config.data_path, f"features_{postfix}_4.pkl"))
+    output_dict = load_pickle(os.path.join(Config.data_path, f"ratings_{postfix}.pkl"))
 
     merged_dict = merge_input_output_dicts(input_dict, output_dict)
-    save_pickle(merged_dict, os.path.join(Config.data_path, "dataset_omni_4.pkl"))
+    save_pickle(merged_dict, os.path.join(Config.data_path, f"dataset_{postfix}_4.pkl"))
     

@@ -73,14 +73,22 @@ class Config:
         os.makedirs(log_path)
     
     seed = 15
+    
+    # Data preprocessing hyperparameters
+    record_begin_threshold = "2010-01-01"
+    record_end_threshold = "2017-01-01"
+    cpi_path = os.path.join(data_path, "cpi.pkl")
 
+
+    # Training hyperparameters
     epochs = 500
     batch_size = 32
+    train_ratio = 0.8
+
+    # LSTM hyperparameters
     learning_rate = 1e-3
     hidden_size = 256
     proj_size = 0
-
-    train_ratio = 0.8
 
 
 
