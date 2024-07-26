@@ -1,0 +1,249 @@
+1	WMT	Walmart Inc.	569.64B	-0.30%	10,669,694	657.33B
+2	PG	The Procter & Gamble Company	397.54B	-0.59%	4,330,012	84.06B
+3	COST	Costco Wholesale Corporation	372.12B	-0.82%	2,258,320	253.70B
+4	KO	The Coca-Cola Company	280.84B	-0.03%	8,178,589	46.07B
+5	PEP	PepsiCo, Inc.	234.02B	0.28%	5,993,391	92.05B
+6	PM	Philip Morris International Inc.	167.05B	-0.78%	3,146,492	35.95B
+7	UL	Unilever PLC	144.66B	-0.27%	2,179,034	66.23B
+8	BUD	Anheuser-Busch InBev SA/NV	119.84B	-1.80%	1,169,738	59.38B
+9	MDLZ	Mondelez International, Inc.	89.76B	-0.30%	5,657,889	36.14B
+10	MO	Altria Group, Inc.	84.73B	-0.12%	6,663,206	24.34B
+11	CL	Colgate-Palmolive Company	80.82B	-0.89%	3,283,508	19.75B
+12	BTI	British American Tobacco p.l.c.	73.13B	1.04%	5,604,736	34.54B
+13	DEO	Diageo plc	71.63B	-1.53%	458,662	21.66B
+14	TGT	Target Corporation	70.36B	-2.46%	2,819,586	106.62B
+15	MNST	Monster Beverage Corporation	53.14B	0.57%	5,168,647	7.34B
+16	KMB	Kimberly-Clark Corporation	48.51B	0.36%	1,981,325	20.39B
+17	STZ	Constellation Brands, Inc.	45.23B	0.01%	693,141	10.11B
+18	KDP	Keurig Dr Pepper Inc.	44.92B	0.18%	6,161,622	14.93B
+19	KHC	The Kraft Heinz Company	41.01B	-0.38%	9,952,202	26.56B
+20	KR	The Kroger Co.	39.56B	0.02%	3,248,082	150.14B
+21	HSY	The Hershey Company	39.12B	-0.34%	1,562,602	11.43B
+22	SYY	Sysco Corporation	37.03B	-0.92%	1,934,292	78.02B
+23	GIS	General Mills, Inc.	36.57B	0.28%	2,408,192	19.86B
+24	KVUE	Kenvue Inc.	35.08B	-0.65%	12,133,488	15.49B
+25	EL	The Estée Lauder Companies Inc.	34.74B	-3.75%	4,357,954	15.35B
+26	CCEP	Coca-Cola Europacific Partners PLC	33.81B	-0.19%	1,017,164	20.34B
+27	ABEV	Ambev S.A.	33.07B	-3.67%	23,588,135	16.37B
+28	ADM	Archer-Daniels-Midland Company	32.03B	-1.42%	1,852,645	91.71B
+29	DG	Dollar General Corporation	26.73B	-2.24%	2,297,887	39.26B
+30	CHD	Church & Dwight Co., Inc.	24.98B	-1.49%	1,217,123	5.94B
+31	FMX	Fomento Económico Mexicano, SAB de CV	24.91B	-1.41%	624,894	41.43B
+32	DLTR	Dollar Tree, Inc.	22.93B	1.26%	4,348,155	30.91B
+33	TSN	Tyson Foods, Inc.	21.09B	-0.05%	1,430,730	52.88B
+34	BF.A	Brown-Forman Corporation	20.83B	-1.74%	42,467	4.18B
+35	MKC.V	McCormick & Company, Incorporated	20.40B	1.99%	1,278	6.68B
+36	K	Kellanova Co	20.11B	-0.20%	1,268,482	12.27B
+37	MKC	McCormick & Company, Incorporated	19.94B	-0.30%	1,469,307	6.68B
+38	HRL	Hormel Foods Corporation	17.67B	0.22%	1,750,637	12.05B
+39	CLX	The Clorox Company	16.93B	-0.65%	741,068	7.21B
+40	BG	Bunge Limited	15.89B	0.10%	813,171	57.63B
+41	CAG	Conagra Brands, Inc.	14.39B	-0.10%	3,409,595	12.05B
+42	CPB	Campbell Soup Company	14.30B	0.40%	2,078,973	9.41B
+43	USFD	US Foods Holding Corp.	13.03B	-0.80%	926,953	36.00B
+44	SJM	The J. M. Smucker Company	12.82B	-0.64%	769,398	8.18B
+45	BJ	BJ's Wholesale Club Holdings, Inc.	11.96B	-0.97%	838,904	20.16B
+46	CELH	Celsius Holdings, Inc.	11.88B	0.45%	3,479,029	1.41B
+47	EDU	New Oriental Education & Technology Group Inc.	11.88B	-0.42%	1,192,688	4.04B
+48	ACI	Albertsons Companies, Inc.	11.48B	-1.10%	1,889,728	79.24B
+49	LW	Lamb Weston Holdings, Inc.	11.42B	0.09%	3,250,339	6.55B
+50	TAP	Molson Coors Beverage Company	11.27B	-1.69%	1,940,582	11.95B
+51	TAP.A	Molson Coors Beverage Company	10.89B	4.17%	22	11.95B
+52	PFGC	Performance Food Group Company	10.22B	-1.05%	1,026,447	57.96B
+53	COKE	Coca-Cola Consolidated, Inc.	10.21B	2.01%	37,913	6.67B
+54	ELF	e.l.f. Beauty, Inc.	9.64B	0.14%	1,841,262	1.02B
+55	PPC	Pilgrim's Pride Corporation	9.43B	2.08%	678,599	17.56B
+56	COTY	Coty Inc.	8.63B	-1.29%	4,373,963	6.11B
+57	SFM	Sprouts Farmers Market, Inc.	8.31B	-0.18%	841,632	6.99B
+58	INGR	Ingredion Incorporated	7.86B	0.43%	177,581	7.91B
+59	BRBR	BellRing Brands, Inc.	6.76B	0.47%	1,340,696	1.84B
+60	POST	Post Holdings, Inc.	6.67B	-0.02%	288,085	7.77B
+61	BRFS	BRF S.A.	6.22B	-9.69%	3,936,523	11.01B
+62	OLLI	Ollie's Bargain Outlet Holdings, Inc.	6.18B	-0.41%	1,199,997	2.10B
+63	DAR	Darling Ingredients Inc.	6.05B	-0.29%	1,219,801	6.42B
+64	TAL	TAL Education Group	6.02B	0.20%	3,299,096	1.49B
+65	FRPT	Freshpet, Inc.	5.76B	-0.42%	517,441	823.22M
+66	LANC	Lancaster Colony Corporation	5.18B	-1.49%	80,034	1.87B
+67	FIZZ	National Beverage Corp.	4.81B	-0.41%	124,586	1.19B
+68	FLO	Flowers Foods, Inc.	4.76B	-0.09%	711,322	5.13B
+69	KOF	Coca-Cola FEMSA, SAB de CV	4.51B	-2.29%	113,186	14.45B
+70	LOPE	Grand Canyon Education, Inc.	4.44B	-1.87%	104,421	985.45M
+71	HIMS	Hims & Hers Health, Inc.	4.20B	-7.37%	8,790,447	959.40M
+72	IPAR	Inter Parfums, Inc.	3.97B	-1.71%	98,946	1.33B
+73	SMPL	The Simply Good Foods Company	3.73B	0.54%	1,449,232	1.28B
+74	GHC	Graham Holdings Company	3.44B	-0.97%	20,590	4.54B
+75	SAM	The Boston Beer Company, Inc.	3.36B	-2.13%	128,790	2.02B
+76	PRMW	Primo Water Corporation	3.27B	-1.35%	925,408	1.68B
+77	JJSF	J&J Snack Foods Corp.	3.26B	-0.90%	73,460	1.58B
+78	CALM	Cal-Maine Foods, Inc.	3.20B	-0.32%	475,238	2.37B
+79	LRN	Stride, Inc.	3.07B	-0.18%	330,507	1.99B
+80	AKO.B	Embotelladora Andina S.A.	2.95B	-2.61%	4,347	2.98B
+81	NOMD	Nomad Foods Limited	2.94B	-2.01%	423,974	3.32B
+82	ATGE	Adtalem Global Education Inc.	2.93B	-	357,980	1.54B
+83	TBBB	BBB Foods Inc.	2.91B	-1.25%	796,769	2.63B
+84	STRA	Strategic Education, Inc.	2.89B	-1.23%	102,944	1.17B
+85	PSMT	PriceSmart, Inc.	2.76B	-0.66%	211,033	4.81B
+86	NWL	Newell Brands Inc.	2.71B	-3.12%	3,522,015	7.98B
+87	AKO.A	Embotelladora Andina S.A.	2.68B	-1.03%	414	2.98B
+88	ASAI	Sendas Distribuidora S.A.	2.51B	-6.07%	368,066	13.64B
+89	SPB	Spectrum Brands Holdings, Inc.	2.37B	-0.17%	443,979	2.89B
+90	CENTA	Central Garden & Pet Company	2.36B	-2.89%	212,794	3.31B
+91	CENT	Central Garden & Pet Company	2.35B	-3.05%	90,591	3.31B
+92	LAUR	Laureate Education, Inc.	2.35B	-2.32%	540,928	1.51B
+93	TR	Tootsie Roll Industries, Inc.	2.30B	-0.23%	82,945	760.45M
+94	RLX	RLX Technology Inc.	2.29B	-1.11%	1,459,849	270.71M
+95	CCU	Compania Cervecerias Unidas S.A.	2.26B	-0.41%	106,777	2.92B
+96	GO	Grocery Outlet Holding Corp.	2.13B	0.66%	1,784,259	4.04B
+97	THS	TreeHouse Foods, Inc.	2.02B	-3.54%	374,748	3.44B
+98	EPC	Edgewell Personal Care Company	2.01B	-1.34%	259,776	2.27B
+99	WMK	Weis Markets, Inc.	1.93B	0.66%	69,589	4.73B
+100	DNUT	Krispy Kreme, Inc.	1.90B	-1.83%	1,233,249	1.71B
+101	VGR	Vector Group Ltd.	1.86B	-0.50%	553,189	1.41B
+102	MGPI	MGP Ingredients, Inc.	1.76B	-1.84%	186,041	806.08M
+103	ANDE	The Andersons, Inc.	1.76B	-1.01%	128,939	13.59B
+104	VITL	Vital Farms, Inc.	1.71B	-1.89%	654,236	500.61M
+105	CHEF	The Chefs' Warehouse, Inc.	1.63B	-3.30%	455,147	3.59B
+106	PRDO	Perdoceo Education Corporation	1.54B	0.77%	428,334	682.67M
+107	AFYA	Afya Limited	1.50B	-3.80%	151,094	590.50M
+108	COCO	The Vita Coco Company, Inc.	1.47B	-2.11%	461,822	495.55M
+109	KLG	WK Kellogg Co	1.42B	-0.06%	711,035	2.75B
+110	IMKTA	Ingles Markets, Incorporated	1.41B	-1.05%	79,759	5.87B
+111	HELE	Helen of Troy Limited	1.36B	-3.97%	563,125	1.95B
+112	UDMY	Udemy, Inc.	1.31B	-1.38%	797,436	749.35M
+113	UTZ	Utz Brands, Inc.	1.30B	-1.48%	374,846	1.43B
+114	DOLE	Dole plc	1.30B	-0.15%	290,104	8.38B
+115	UVV	Universal Corporation	1.26B	-0.82%	151,759	2.75B
+116	GOTU	Gaotu Techedu Inc.	1.24B	-0.62%	1,297,757	444.50M
+117	BRCC	BRC Inc.	1.23B	-5.62%	625,217	410.52M
+118	JBSS	Sanfilippo (John B.) & Son, Inc	1.17B	3.47%	191,398	1.03B
+119	HLF	Herbalife Nutrition Ltd.	1.16B	-1.19%	1,291,449	5.07B
+120	FDP	Fresh Del Monte Produce Inc.	1.14B	0.85%	261,266	4.30B
+121	NAPA	The Duckhorn Portfolio, Inc.	1.11B	-1.04%	703,249	398.18M
+122	COUR	Coursera, Inc.	1.11B	-6.32%	2,100,805	657.19M
+123	AGRO	Adecoagro S.A.	986.16M	-2.27%	644,086	1.31B
+124	UTI	Universal Technical Institute, Inc.	985.11M	0.88%	506,463	682.46M
+125	WEST	Westrock Coffee Company, LLC	893.53M	-0.99%	80,066	851.77M
+126	USNA	USANA Health Sciences, Inc.	891.19M	-0.89%	52,137	900.45M
+127	UNFI	United Natural Foods, Inc.	837.34M	1.08%	380,620	30.24B
+128	AVO	Mission Produce, Inc.	777.17M	-0.18%	132,475	1.08B
+129	HAIN	The Hain Celestial Group, Inc.	688.21M	-1.03%	903,293	1.77B
+130	SPTN	SpartanNash Company	681.90M	0.35%	247,124	9.63B
+131	BGS	B&G Foods, Inc.	675.10M	-1.04%	911,433	2.03B
+132	STKL	SunOpta Inc.	653.98M	0.74%	472,776	724.82M
+133	TPB	Turning Point Brands, Inc.	645.84M	-1.93%	96,717	401.50M
+134	OTLY	Oatly Group AB	618.60M	-2.80%	1,483,279	786.86M
+135	NGVC	Natural Grocers by Vitamin Cottage, Inc.	556.81M	-1.29%	72,319	1.19B
+136	SNDL	SNDL Inc.	553.68M	-3.90%	2,790,041	682.58M
+137	FC	Franklin Covey Co.	539.23M	-1.53%	42,799	281.06M
+138	NUS	Nu Skin Enterprises, Inc.	532.43M	-2.10%	480,009	1.90B
+139	LND	BrasilAgro - Companhia Brasileira de Propriedades Agrícolas	488.61M	1.98%	61,707	277.76M
+140	EWCZ	European Wax Center, Inc.	443.82M	-7.59%	458,829	223.01M
+141	CVGW	Calavo Growers, Inc.	432.36M	-0.37%	159,540	813.04M
+142	SENEA	Seneca Foods Corporation	429.45M	-2.96%	13,569	1.46B
+143	DAO	Youdao, Inc.	429.07M	-2.45%	45,161	780.25M
+144	DDL	Dingdong (Cayman) Limited	423.19M	-0.52%	298,541	2.78B
+145	BYND	Beyond Meat, Inc.	417.21M	-10.32%	4,259,132	326.74M
+146	LINC	Lincoln Educational Services Corporation	413.80M	0.08%	132,239	394.15M
+147	LMNR	Limoneira Company	401.83M	-1.80%	52,289	178.27M
+148	ISPR	Ispire Technology Inc.	395.93M	-4.88%	73,890	147.19M
+149	SENEB	Seneca Foods Corporation	395.53M	-	127	1.46B
+150	VLGEA	Village Super Market, Inc.	370.55M	1.24%	20,456	2.20B
+151	YSG	Yatsen Holding Limited	359.91M	-6.00%	213,558	475.38M
+152	HNST	The Honest Company, Inc.	353.12M	-9.82%	2,388,565	347.19M
+153	APEI	American Public Education, Inc.	334.45M	-0.78%	187,855	605.29M
+154	CHGG	Chegg, Inc.	334.25M	-7.63%	3,542,784	703.04M
+155	MAMA	Mama's Creations, Inc.	302.58M	1.50%	723,835	110.00M
+156	NATR	Nature's Sunshine Products, Inc.	292.56M	-2.56%	37,810	447.68M
+157	AFRI	Forafric Global PLC	290.56M	-2.26%	10,783	305.48M
+158	VSTA	Vasta Platform Limited	243.01M	-	382	306.99M
+159	SKIN	The Beauty Health Company	238.61M	-7.21%	1,060,048	393.12M
+160	FREE	Whole Earth Brands, Inc.	211.81M	-0.21%	304,538	548.00M
+161	CDXC	ChromaDex Corporation	208.49M	-5.15%	277,259	83.17M
+162	ALCO	Alico, Inc.	204.40M	-1.00%	8,543	40.06M
+163	BRLS	Borealis Foods Inc.	192.61M	3.44%	1,817	22.94M
+164	LWAY	Lifeway Foods, Inc.	180.31M	-5.91%	147,495	166.85M
+165	HFFG	HF Foods Group Inc.	173.62M	-2.08%	30,913	1.15B
+166	FTLF	FitLife Brands, Inc.	145.08M	0.62%	4,904	58.51M
+167	SKIL	Skillsoft Corp.	143.69M	0.06%	44,290	-
+168	ACU	Acme United Corporation	135.67M	3.29%	23,324	190.62M
+169	MYND	Mynd.ai, Inc.	131.47M	2.86%	25,681	413.56M
+170	WILC	G. Willi-Food International Ltd.	131.39M	-1.81%	1,288	146.24M
+171	VFF	Village Farms International, Inc.	119.08M	-2.73%	309,645	299.02M
+172	STG	Sunlands Technology Group	111.95M	-3.15%	1,159	293.88M
+173	QSG	QuantaSing Group Ltd	93.85M	-1.18%	19,226	3.62B
+174	DIT	AMCON Distributing Company	91.40M	-1.35%	248	2.64B
+175	BRID	Bridgford Foods Corporation	89.59M	-1.10%	1,767	236.66M
+176	IH	iHuman Inc.	88.46M	-2.98%	3,276	137.21M
+177	LFVN	LifeVantage Corporation	83.06M	2.03%	31,694	205.45M
+178	COE	51 Talk Online Education Group	79.21M	-3.70%	27,368	31.01M
+179	FARM	Farmer Bros. Co.	61.24M	-2.04%	77,754	342.20M
+180	BEDU	Bright Scholar Education Holdings Limited	60.05M	-0.49%	5,104	311.17M
+181	BRFH	Barfresh Food Group, Inc.	57.41M	-0.51%	30,611	8.87M
+182	GROV	Grove Collaborative Holdings, Inc.	56.13M	-4.55%	59,291	241.26M
+183	RAY	Raytech Holding Limited	54.95M	-4.88%	15,792	5.83M
+184	SHOT	Safety Shot Inc	54.35M	-4.55%	412,702	2.68M
+185	ZVIA	Zevia PBC	53.66M	-12.68%	80,379	161.92M
+186	UG	United-Guardian, Inc.	52.88M	-2.62%	20,754	11.57M
+187	ABVE	Above Food Ingredients Inc.	47.82M	2.98%	143,587	368.42M
+188	GNS	Genius Group Limited	42.50M	-6.74%	3,600,550	23.06M
+189	LSF	Laird Superfood, Inc.	39.99M	-0.74%	66,110	36.02M
+190	GSUN	Golden Sun Education Group Limited	37.79M	-0.44%	10,816	6.16M
+191	AIU	Meta Data Limited	36.95M	-2.04%	13,397	32.43M
+192	NAII	Natural Alternatives International, Inc.	35.90M	-1.70%	259	120.20M
+193	BIG	Big Lots, Inc.	33.54M	-8.13%	1,796,786	4.61B
+194	CLNN	Clene Inc.	30.89M	0.21%	81,754	620.00K
+195	DTCK	Davis Commodities Limited	29.16M	0.83%	64,403	190.72M
+196	FEDU	Four Seasons Education (Cayman) Inc.	28.57M	3.85%	631	17.42M
+197	SDOT	Sadot Group Inc.	28.51M	-8.59%	179,419	611.05M
+198	LOCL	Local Bounti Corporation	24.70M	-3.96%	3,499	29.24M
+199	CTCX	Carmell Therapeutics Corporation	24.06M	-16.43%	7,002	21.92M
+200	TWG	Top Wealth Group Holding Limited	23.26M	3.62%	48,941	16.94M
+201	MSS	Maison Solutions Inc.	22.84M	-1.69%	11,286	55.30M
+202	COOT	Australian Oilseeds Holdings Limited	22.76M	-1.05%	16,239	20.03M
+203	AACG	ATA Creativity Global	20.29M	6.65%	65,017	31.59M
+204	JZ	Jianzhi Education Technology Group Company Limited	19.18M	-	1,034	440.54M
+205	WVVI	Willamette Valley Vineyards, Inc.	19.11M	-3.02%	7,987	39.63M
+206	YQ	17 Education & Technology Group Inc.	17.43M	10.00%	2,851	26.00M
+207	RGF	The Real Good Food Company, Inc.	16.97M	-0.02%	60,207	156.38M
+208	EDTK	Skillful Craftsman Education Technology Limited	16.69M	-0.92%	691	5.52M
+209	ATPC	Agape ATP Corporation	14.78M	-4.00%	28,578	1.37M
+210	NCRA	Nocera, Inc.	14.64M	4.85%	185	24.98M
+211	JVA	Coffee Holding Co., Inc.	14.21M	12.67%	109,019	73.06M
+212	SBEV	Splash Beverage Group, Inc.	14.17M	-10.03%	647,603	14.57M
+213	SANW	S&W Seed Company	13.44M	-	57,507	68.68M
+214	DDC	DDC Enterprise Limited	13.43M	-1.89%	25,815	27.86M
+215	MTEX	Mannatech, Incorporated	13.19M	-	2,303	127.23M
+216	RMCF	Rocky Mountain Chocolate Factory, Inc.	12.86M	-1.23%	33,312	27.92M
+217	TCTM	TCTM Kids IT Education Inc.	12.30M	-1.72%	5,570	193.96M
+218	EEIQ	EpicQuest Education Group International Limited	12.15M	7.00%	8,524	5.71M
+219	SISI	Shineco, Inc.	12.14M	6.93%	3,653,629	4.09M
+220	TWOU	2U, Inc.	11.92M	-6.80%	59,611	905.83M
+221	AAGR	African Agriculture Holdings Inc.	9.92M	-5.77%	308,180	-
+222	STKH	Steakholder Foods Ltd.	9.15M	-3.68%	11,159	-
+223	VINE	Fresh Vine Wine, Inc.	8.82M	-5.19%	136,523	1.52M
+224	GV	Visionary Holdings Inc.	8.53M	-6.10%	3,661	11.52M
+225	WAFU	Wah Fu Education Group Limited	8.44M	0.52%	4,117	8.89M
+226	KAVL	Kaival Brands Innovations Group, Inc.	8.34M	-2.38%	396,139	12.98M
+227	VWE	Vintage Wine Estates, Inc.	8.25M	-3.38%	1,098,330	249.02M
+228	SNAX	Stryve Foods, Inc.	7.56M	1.78%	5,492	17.66M
+229	PAVS	Paranovus Entertainment Technology Ltd.	6.97M	4.38%	4,009	51.46M
+230	XXII	22nd Century Group, Inc.	6.76M	-2.45%	127,095	16.71M
+231	AQB	AquaBounty Technologies, Inc.	6.48M	-1.73%	11,890	2.55M
+232	DSY	Big Tree Cloud Holdings Limited	6.15M	-12.77%	3,527,556	10.45M
+233	BOF	BranchOut Food Inc.	4.93M	10.36%	84,316	4.20M
+234	AGRI	AgriFORCE Growing Systems Ltd.	4.72M	-6.99%	11,542,936	16.28K
+235	TANH	Tantech Holdings Ltd	4.55M	2.62%	231,497	47.32M
+236	EDBL	Edible Garden AG Incorporated	4.36M	0.73%	135,543	14.73M
+237	RKDA	Arcadia Biosciences, Inc.	4.20M	-4.73%	12,682	5.41M
+238	LQR	LQR House Inc.	4.15M	-1.78%	44,083	1.45M
+239	LXEH	Lixiang Education Holding Co., Ltd.	4.10M	1.01%	20,230	7.17M
+240	FAMI	Farmmi, Inc.	3.66M	-0.38%	32,790	110.36M
+241	AMBO	Ambow Education Holding Ltd.	3.57M	1.56%	594	1.29M
+242	BTTR	Better Choice Company Inc.	3.45M	-7.83%	59,882	37.26M
+243	BON	Bon Natural Life Limited	3.04M	-1.36%	14,375	29.52M
+244	HPCO	Hempacco Co., Inc.	2.91M	-0.13%	23,025	2.53M
+245	NUZE	NuZee, Inc.	2.70M	-16.55%	101,569	3.39M
+246	BSFC	Blue Star Foods Corp.	2.17M	-9.16%	372,427	6.49M
+247	EAST	Eastside Distilling, Inc.	1.68M	1.02%	80,319	10.06M
+248	GNLN	Greenlane Holdings, Inc.	1.66M	1.13%	41,197	77.34M
+249	CLEU	China Liberal Education Holdings Limited	1.13M	-10.25%	1,307,266	2.89M
