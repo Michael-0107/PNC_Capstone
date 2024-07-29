@@ -54,7 +54,8 @@ rating_to_category = {
     "C": 20,
     "RD": 21,
     "D": 22, 
-    "F3": 23
+    "F3": 23,
+    'SD': 24
 }
 
 category_to_rating = {v: k for k, v in rating_to_category.items()}
