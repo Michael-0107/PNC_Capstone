@@ -32,6 +32,8 @@ class ConvModel(nn.Module):
         )
 
         self.fcs = nn.Sequential(
+            nn.Linear(128, 64),
+            nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
             nn.Linear(32, 1)
@@ -49,7 +51,7 @@ class ConvModel(nn.Module):
 
 if __name__ == "__main__":
     model = ConvModel(24)
-    random_tensor = torch.rand(16, 4, 24)
+    random_tensor = torch.rand(16, 8, 24)
 
     out = model(random_tensor)
 

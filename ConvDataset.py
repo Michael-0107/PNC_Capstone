@@ -6,7 +6,7 @@ from Hypers import Config
 
 
 class ConvDataset(Dataset):
-    def __init__(self, merged_dict) -> None:
+    def __init__(self, merged_dict, window_size=4) -> None:
         super(ConvDataset, self).__init__()
 
         self.merged_dict = merged_dict
@@ -20,13 +20,15 @@ class ConvDataset(Dataset):
                 self.label_list.append(label)
 
         assert len(self.feature_list) == len(self.label_list)
+
+        self.window_size = window_size
     
     def __len__(self):
         return len(self.feature_list)
 
 
     def __getitem__(self, idx):
-        return self.feature_list[idx].reshape(4,-1), self.label_list[idx]
+        return self.feature_list[idx].reshape(self.window_size,-1), self.label_list[idx]
 
     @staticmethod
     def custom_collate_fn(batch):
