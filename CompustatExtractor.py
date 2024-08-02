@@ -98,6 +98,17 @@ class CompustatExtractor:
 
     @staticmethod
     def process_compustat_features(csv_path, save=True, filestem="compustat", add_cpi=True):
+        """Process features from Compustat csv files, into nested dictionaries (ticker->(period->features))
+
+        Args:
+            csv_path (_type_): path to the raw compustat feature csv file
+            save (bool, optional): whether to save the intermediate and final processed results. Defaults to True.
+            filestem (str, optional): The filestem of the saved result, will be save in {data_path}/{filestem}.pkl. Defaults to "compustat".
+            add_cpi (bool, optional): Whether to add CPI as additional feature. Defaults to True.
+
+        Returns:
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: feature vector
+        """
         record_df = pd.read_csv(csv_path, parse_dates=["datadate"]) # may have nan in fyearq, fqtr
         record_df = record_df.dropna(axis=0, how='any', subset=['tic', 'fyearq', 'fqtr']+numeric_features)
         record_df['fyearq'] = record_df['fyearq'].astype(int)
@@ -107,15 +118,22 @@ class CompustatExtractor:
         record_df = record_df[(record_df['datadate'] >= Config.record_begin_threshold) & \
                               (record_df['datadate'] <= Config.record_end_threshold)]
 
+        # Add derived financial ratios
         record_appended = CompustatExtractor.append_financial_ratio(record_df)
+
+        # Add Macro-economic features
         if add_cpi:
             cpi_dict = utils.load_pickle(Config.cpi_path)
             record_appended = CompustatExtractor.append_cpi(record_appended, cpi_dict)
 
+        # Save human-readable intermediate results before normalizing
         if save:
             record_appended.to_csv(os.path.join(Config.data_path, f"{filestem}_scaler.csv"), index=False)
 
+        # Normalize the features
         record_appended = CompustatExtractor.normalize_features(record_appended)
+
+        # Transform to dictionary
         feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended, add_cpi=add_cpi)
 
         if save:
@@ -127,7 +145,6 @@ class CompustatExtractor:
     def get_ratings_by_quarter(df, start_date='2010-01-01', end_date='2017-01-01'):
         df = df[(df['datadate'] >= start_date) & (df['datadate'] <= end_date)]
 
-        # df['Quarter'] = df['datadate'].dt.to_period('Q')
         df.loc[:, 'Quarter'] = df['datadate'].dt.to_period('Q')
 
         quarter_rating_dict = {}
@@ -146,6 +163,16 @@ class CompustatExtractor:
 
     @staticmethod
     def process_compustat_ratings(csv_path, save=True, filestem="ratings"):
+        """Process ratings from Compustat csv files, into dictionary (ticker->(period->features))
+
+        Args:
+            csv_path (_type_): path to the raw compustat rating csv file
+            save (bool, optional): whether to save the results into pkl. Defaults to True.
+            filestem (str, optional): The filestem of the saved result, will be save in {data_path}/{filestem}.pkl. Defaults to "ratings".
+
+        Returns:
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: rating vector
+        """
         record_df = pd.read_csv(csv_path, parse_dates=["datadate"])
         # drop Nan in "splticrm" column
         record_df = record_df.dropna(subset=["splticrm"])
@@ -164,6 +191,19 @@ class CompustatExtractor:
     
     @staticmethod
     def process_compustat_omni(csv_path, feature_list_path, save=True, postfix="omni", verbose=True, add_cpi=True):
+        """OMNI stands for 205 extremely raw financial data from Compustat. Very alike process_compustat_features()
+
+        Args:
+            csv_path (_type_): path to the raw compustat rating csv file
+            feature_list_path (_type_): path to a document that contain what features to treat as features. See data/WRDS/float_features for example
+            save (bool, optional): Whether to save the results into pkl. Defaults to True.
+            postfix (str, optional): identifier of the dataset. Defaults to "omni".
+            verbose (bool, optional): Whether to print information. Defaults to True.
+            add_cpi (bool, optional): Whether to add CPI. Defaults to True.
+
+        Returns:
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: feature vector
+        """
         float_features = []
         with open(feature_list_path, 'r') as f:
             for line in f:
@@ -197,18 +237,104 @@ class CompustatExtractor:
             utils.save_pickle(features_dict, os.path.join(Config.data_path, f"features_{postfix}.pkl"))
 
         return features_dict
+    
+    @ staticmethod
+    def merge_input_output_dicts(input_dict, output_dict, verbose=True):
+        """Pair the input features to output ratings. The function will find the intersection of two dictionaries.
+
+        Args:
+            input_dict (_type_): Nested dictionary with features
+            output_dict (_type_): Nested dictionary with ratings
+            verbose (bool, optional): Whether to print information. Defaults to True.
+
+        Returns:
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: tuple(feature vector, rating vector)
+        """
+        merged_dict = {}
+        for company_name in output_dict:
+            if not company_name in input_dict:
+                continue
+            
+            for period in output_dict[company_name]:
+                if not period in input_dict[company_name]:
+                    continue
+                
+                if company_name not in merged_dict:
+                    merged_dict[company_name] = {}
+                
+                # transform to one hot
+                rating = output_dict[company_name][period]
+                category = Hypers.rating_to_category[rating]
+                # output_dict[company_name][period] = F.one_hot(torch.tensor(category), num_classes=len(rating_to_category))
+
+                merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]))
         
+        if verbose:
+            print(f"input_dict: {len(input_dict)}")
+            print(f"output_dict: {len(output_dict)}")
+            print(f"merged_dict: {len(merged_dict)}")
+
+        return merged_dict
+    
+    @staticmethod
+    def concatenate_features(data, k=4):
+        """Generate a feature tensor by concatenating the features from the last k quarters.
+
+        Args:
+            data (_type_): Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: feature vector
+            k (int, optional): window size, add k-1 previous quarters with the current quarter. Defaults to 4.
+
+        Returns:
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: feature vector
+        """
+        new_data = {}
+
+        for company, time_feature_dict in data.items():
+            new_time_feature_dict = OrderedDict()
+            sorted_times = sorted(time_feature_dict.keys())
+            feature_length = next(iter(time_feature_dict.values())).shape[0]  # Assuming all features have the same length
+
+            for i, current_time in enumerate(sorted_times):
+                start_index = max(0, i - k + 1)
+                features_to_concatenate = [time_feature_dict[sorted_times[j]] for j in range(start_index, i + 1)]
+                
+                # If there are less than k quarters, pad with zeros
+                if len(features_to_concatenate) < k:
+                    padding_count = k - len(features_to_concatenate)
+                    padding_tensors = [torch.zeros(feature_length) for _ in range(padding_count)]
+                    features_to_concatenate = padding_tensors + features_to_concatenate
+
+                concatenated_feature = torch.cat(features_to_concatenate, dim=0)
+                new_time_feature_dict[current_time] = concatenated_feature
+
+            new_data[company] = new_time_feature_dict
+
+        return new_data
+
 
 if __name__ == "__main__":
-    postfix = "retail_indus"
+    postfix = "US"
+    # Extract the features and ratings
     feature_dict = CompustatExtractor().process_compustat_features(os.path.join(Config.data_path, "WRDS", f"features_{postfix}.csv"),
                                                                 save=True, 
-                                                                filestem=f"features_RetInd")
+                                                                filestem=f"features_{postfix}")
     
     rating_dict = CompustatExtractor().process_compustat_ratings(os.path.join(Config.data_path, "WRDS", f"ratings_{postfix}.csv"), 
-                                                                 save=True, filestem=f"ratings_RetInd")
+                                                                 save=True, filestem=f"ratings_{postfix}")
+    
+    # If you want to use all 205 raw features
     # CompustatExtractor.process_compustat_omni(os.path.join(Config.data_path, "WRDS", "cleaned_financial_data.csv"),
     #                                            os.path.join(Config.data_path, "WRDS", "float_features.txt"))
+
+    # If you want to concatenate the features from the last k quarters. 
+    # If you don't do so, it will only contain the features from the current quarter
+    k=8
+    feature_windowed_dict = CompustatExtractor.concatenate_features(feature_dict, k=k)
+    
+    # Merge features(probably windowed) and ratings for dataset
+    merged_dict = CompustatExtractor.merge_input_output_dicts(feature_windowed_dict, rating_dict)
+    utils.save_pickle(merged_dict, os.path.join(Config.data_path, f"dataset_{postfix}_{k}.pkl"))
+
 
 
 

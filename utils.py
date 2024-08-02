@@ -20,34 +20,6 @@ def fix_random_seed(seed):
 def read_dict_json(path):
     with open(path, 'r') as f:
         return json.load(f)
-    
-
-def merge_input_output_dicts(input_dict, output_dict, verbose=True):
-    merged_dict = {}
-    for company_name in output_dict:
-        if not company_name in input_dict:
-            continue
-        
-        for period in output_dict[company_name]:
-            if not period in input_dict[company_name]:
-                continue
-            
-            if company_name not in merged_dict:
-                merged_dict[company_name] = {}
-            
-            # transform to one hot
-            rating = output_dict[company_name][period]
-            category = rating_to_category[rating]
-            # output_dict[company_name][period] = F.one_hot(torch.tensor(category), num_classes=len(rating_to_category))
-
-            merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]))
-    
-    if verbose:
-        print(f"input_dict: {len(input_dict)}")
-        print(f"output_dict: {len(output_dict)}")
-        print(f"merged_dict: {len(merged_dict)}")
-
-    return merged_dict
 
 
 def save_pickle(save_dict, save_path):
@@ -107,10 +79,5 @@ def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy, identifier:
 
 
 if __name__ == "__main__":
-    postfix = "RetInd"
-    input_dict = load_pickle(os.path.join(Config.data_path, f"features_{postfix}_4.pkl"))
-    output_dict = load_pickle(os.path.join(Config.data_path, f"ratings_{postfix}.pkl"))
-
-    merged_dict = merge_input_output_dicts(input_dict, output_dict)
-    save_pickle(merged_dict, os.path.join(Config.data_path, f"dataset_{postfix}_4.pkl"))
+    pass
     

@@ -19,7 +19,8 @@ class Trainer:
                  device=None, 
                  train_loader=None, 
                  valid_loader=None, 
-                 max_seq_len=None) -> None:
+                 max_seq_len=None, 
+                 model_type="") -> None:
         # Training Related
         self.device = device
         self.model = model.to(self.device)
@@ -34,7 +35,8 @@ class Trainer:
         # Statistics
         self.start_time = datetime.now().strftime("%m%d%H%M")
         self.logger = logging.getLogger(__name__)
-        logging.basicConfig(filename=os.path.join(Config.log_path, f"train_{self.start_time}.log"), level=logging.INFO)
+        self.identifier = f"{model_type}_{self.start_time}"
+        logging.basicConfig(filename=os.path.join(Config.log_path, f"train_{self.identifier}.log"), level=logging.INFO)
 
         self.best_valid_loss = torch.inf
         self.train_loss_history = []
@@ -155,10 +157,10 @@ class Trainer:
         return self.train_loss_history, self.train_acccuracy_history, self.valid_loss_history, self.valid_acccuracy_history
     
     def save_model(self):
-        torch.save(self.model.state_dict(), os.path.join(Config.model_path, f"model_{self.start_time}.ckpt"))
+        torch.save(self.model.state_dict(), os.path.join(Config.model_path, f"{self.identifier}.ckpt"))
 
 if __name__ == "__main__":
-    from RatingSet import RatingSet
+    from LSTMDataset import RatingSet
     train_dict = utils.load_pickle(os.path.join(Config.data_path, "train_dict.pkl"))
     valid_dict = utils.load_pickle(os.path.join(Config.data_path, "test_dict.pkl"))
     train_set = RatingSet(train_dict)
@@ -168,7 +170,7 @@ if __name__ == "__main__":
     max_seq_len = max_seq_len = max(max([len(entries) for entries in train_dict.values()]), max([len(entries) for entries in test_dict.values()]))
 
 
-    from PredictorModel import PredictorModel
+    from LSTMModel import PredictorModel
     model = PredictorModel(input_size=len(Hypers.feature_list), 
                             hidden_size=Hypers.Config.hidden_size,
                             num_layers=max_seq_len,

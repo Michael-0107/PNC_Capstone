@@ -4,9 +4,9 @@ import torch.nn as nn
 from Hypers import Config
 
 
-class PredictorModel(nn.Module):
+class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=1, proj_size=0):
-        super(PredictorModel, self).__init__()
+        super(LSTMModel, self).__init__()
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=num_layers, batch_first=True, proj_size=proj_size, dropout=0.2)
         
         self.linear = nn.Linear(hidden_size, 1)
@@ -24,7 +24,7 @@ class PredictorModel(nn.Module):
 
 if __name__ == "__main__":
     import Hypers
-    model = PredictorModel(len(Hypers.feature_list), hidden_size=128, proj_size=len(Hypers.rating_to_category))
+    model = LSTMModel(len(Hypers.feature_list), hidden_size=128, proj_size=len(Hypers.rating_to_category))
     random_tensor = torch.rand(4, 31, len(Hypers.feature_list))
 
     h = torch.zeros(1, 4, len(Hypers.feature_list))
