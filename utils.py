@@ -49,9 +49,21 @@ def merge_input_output_dicts(input_dict, output_dict, verbose=True):
 
     return merged_dict
 
+def rating_to_one_hot_encoding(rating_to_category):
+    categories = list(rating_to_category.values())
+
+    categories_tensor = torch.tensor(categories)
+
+    one_hot_encodings = F.one_hot(categories_tensor, num_classes=len(rating_to_category))
+
+    rating_to_one_hot = {rating: one_hot for rating, one_hot in zip(rating_to_category.keys(), one_hot_encodings)}
+
+    return rating_to_one_hot
+
 def merge_input_output_dicts_k(input_dict, output_dict,all_rating, k, verbose=True):
     merged_dict = {}
-    k = k - 1 
+    rating_to_one_hot = rating_to_one_hot_encoding(rating_to_category)
+    k = k-1
     
     for company_name in output_dict:
         if company_name not in input_dict:
@@ -85,25 +97,26 @@ def merge_input_output_dicts_k(input_dict, output_dict,all_rating, k, verbose=Tr
                 
                 prev_period = f"{prev_year}Q{prev_quarter}"
                 
-                if prev_period in input_dict[company_name]:
+                if prev_period in input_dict[company_name] and prev_period in all_rating[company_name]:
                     prev_features = input_dict[company_name][prev_period]
-                else:
-                    prev_features = [0] * len(current_features)  
-                
-                if prev_period in all_rating[company_name]:
                     prev_rating = all_rating[company_name][prev_period]
                     prev_category = rating_to_category[prev_rating]
                 else:
-                    prev_category = -1  
+                    prev_features = [0] * len(current_features)
+                    # prev_category = rating_to_one_hot['NG']  
+                    prev_category = -1
                 
                 prev_features_tensor = torch.FloatTensor(prev_features)
                 prev_category_tensor = torch.FloatTensor([prev_category])
-                combined_tensor = torch.cat((prev_features_tensor, prev_category_tensor))
+                if i == 0:
+                    combined_tensor = prev_features_tensor
+                else:
+                    combined_tensor = torch.cat((prev_features_tensor, prev_category_tensor))
                 
                 features_list.append(combined_tensor)
             
             # Combine features
-            combined_features = torch.stack(features_list)
+            combined_features = torch.cat(features_list)
             
             # Only current Rating
             combined_ratings = torch.FloatTensor([current_category])

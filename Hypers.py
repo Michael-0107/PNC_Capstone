@@ -55,8 +55,11 @@ rating_to_category = {
     "RD": 21,
     "D": 22, 
     "F3": 23,
-    'SD': 24
+    'SD': 24,
+    'NG': 25
 }
+
+
 
 category_to_rating = {v: k for k, v in rating_to_category.items()}
 
@@ -84,7 +87,7 @@ class Config:
     # Training hyperparameters
     epochs = 500
     batch_size = 32
-    train_ratio = 0.8
+    train_ratio = 0.5
 
     # LSTM hyperparameters
     learning_rate = 1e-3
