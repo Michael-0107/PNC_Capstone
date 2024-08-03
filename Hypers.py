@@ -1,6 +1,7 @@
 import os
 
-numeric_features = ["actq",
+numeric_features = [
+    "actq",
     "ancq", 
     "atq",
     "cheq",
@@ -14,7 +15,7 @@ numeric_features = ["actq",
     "revtq",
     "teqq",
     "xsgaq"
-]
+] # 14
 
 derived_features = [
     "GrossProfitRatio",
@@ -26,9 +27,11 @@ derived_features = [
     "ReturnOnAsset",
     "ReturnOnEquity",
     "InventoryTurnover"
-]
+] # 9
 
-feature_list = numeric_features + derived_features
+change_list = [f"{nf}_change" for nf in numeric_features]
+
+feature_list = numeric_features + derived_features + change_list
 
 rating_to_category = {
     "AAA": 0, 

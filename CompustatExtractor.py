@@ -3,11 +3,12 @@ import pandas as pd
 import torch
 from collections import OrderedDict
 import pickle
+import numpy as np
 
 from sklearn.preprocessing import RobustScaler
 
-from Hypers import Config, feature_list, numeric_features, derived_features
 import Hypers
+from Hypers import Config
 import utils
 
 class CompustatExtractor:
@@ -53,6 +54,20 @@ class CompustatExtractor:
         return record_filled
 
     @staticmethod
+    def append_period_change(record_df, target_cols=None):
+        if target_cols is None:
+            target_cols = Hypers.numeric_features
+
+        record_df_grouped = record_df.groupby("tic")
+        for col in target_cols:
+            record_df[col + "_change"] = record_df_grouped[col].pct_change()
+
+        record_df = record_df.replace([np.inf, -np.inf, np.nan], 0)
+        return record_df
+
+
+
+    @staticmethod
     def append_cpi(record_df, cpi_dict):
         record_df["year_quarter"] = record_df["fyearq"].astype(str) + "Q" + record_df["fqtr"].astype(str)
         record_df["CPI"] = record_df["year_quarter"].apply(lambda x: cpi_dict.get(x, 0))
@@ -91,7 +106,7 @@ class CompustatExtractor:
     @staticmethod
     def normalize_features(record_df, target_cols=None):
         if target_cols is None:
-            target_cols = feature_list
+            target_cols = Hypers.feature_list
         for feature_name in target_cols:
             record_df[feature_name] = RobustScaler().fit_transform(record_df[[feature_name]])
         return record_df
@@ -110,16 +125,20 @@ class CompustatExtractor:
             _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: feature vector
         """
         record_df = pd.read_csv(csv_path, parse_dates=["datadate"]) # may have nan in fyearq, fqtr
-        record_df = record_df.dropna(axis=0, how='any', subset=['tic', 'fyearq', 'fqtr']+numeric_features)
+        record_df = record_df.dropna(axis=0, how='any', subset=['tic', 'fyearq', 'fqtr']+Hypers.numeric_features)
         record_df['fyearq'] = record_df['fyearq'].astype(int)
         record_df['fqtr'] = record_df['fqtr'].astype(int)
+        record_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[True, True, True])
 
         # filter time
         record_df = record_df[(record_df['datadate'] >= Config.record_begin_threshold) & \
                               (record_df['datadate'] <= Config.record_end_threshold)]
 
+        # Add period change
+        record_appended = CompustatExtractor.append_period_change(record_df)
+
         # Add derived financial ratios
-        record_appended = CompustatExtractor.append_financial_ratio(record_df)
+        record_appended = CompustatExtractor.append_financial_ratio(record_appended)
 
         # Add Macro-economic features
         if add_cpi:
@@ -334,6 +353,16 @@ if __name__ == "__main__":
     # Merge features(probably windowed) and ratings for dataset
     merged_dict = CompustatExtractor.merge_input_output_dicts(feature_windowed_dict, rating_dict)
     utils.save_pickle(merged_dict, os.path.join(Config.data_path, f"dataset_{postfix}_{k}.pkl"))
+
+    # record_df = pd.read_csv(os.path.join(Config.data_path, "WRDS", "features_US.csv"), parse_dates=["datadate"]) # may have nan in fyearq, fqtr
+    # record_df = record_df.dropna(axis=0, how='any', subset=['tic', 'fyearq', 'fqtr']+Hypers.numeric_features)
+    # record_df['fyearq'] = record_df['fyearq'].astype(int)
+    # record_df['fqtr'] = record_df['fqtr'].astype(int)
+    # record_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[True, True, True])
+
+    # record_appended = CompustatExtractor.append_period_change(record_df)
+    # record_appended.to_csv(os.path.join(Config.data_path, "tmp.csv"), index=False)
+
 
 
 
