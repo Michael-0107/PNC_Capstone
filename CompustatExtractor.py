@@ -259,7 +259,8 @@ class CompustatExtractor:
     
     @ staticmethod
     def merge_input_output_dicts(input_dict, output_dict, verbose=True):
-        """Pair the input features to output ratings. The function will find the intersection of two dictionaries.
+        """Pair the input features to output ratings (Note: also chages the ratings to numbers). 
+            The function will find the intersection of two dictionaries.
 
         Args:
             input_dict (_type_): Nested dictionary with features
@@ -267,7 +268,8 @@ class CompustatExtractor:
             verbose (bool, optional): Whether to print information. Defaults to True.
 
         Returns:
-            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: tuple(feature vector, rating vector)
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries.
+                    Second layer (entries): key: period, value: tuple(feature vector, rating vector)
         """
         merged_dict = {}
         for company_name in output_dict:
@@ -284,9 +286,9 @@ class CompustatExtractor:
                 # transform to one hot
                 rating = output_dict[company_name][period]
                 category = Hypers.rating_to_category[rating]
-                # output_dict[company_name][period] = F.one_hot(torch.tensor(category), num_classes=len(rating_to_category))
+                category_normalized = category / (len(Hypers.rating_to_category)-1)
 
-                merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]))
+                merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]), torch.FloatTensor([category_normalized]))
         
         if verbose:
             print(f"input_dict: {len(input_dict)}")

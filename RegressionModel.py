@@ -23,7 +23,8 @@ class RegressionModel(nn.Module):
             BasicFullyConnected(256, 128),
             BasicFullyConnected(128, 64),
             BasicFullyConnected(64, 32),
-            nn.Linear(32, 1)
+            nn.Linear(32, 1),
+            nn.Sigmoid()
         )
 
     def forward(self, x):
