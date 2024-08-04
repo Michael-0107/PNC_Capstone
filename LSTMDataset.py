@@ -5,25 +5,30 @@ from torch.utils.data import Dataset
 from Hypers import Config
 
 class LSTMDataset(Dataset):
-    def __init__(self, merged_dict):
+    def __init__(self, merged_dict, max_seq_len=4):
         self.merged_dict = merged_dict
+        self.max_seq_len = max_seq_len
         
         companies = list(self.merged_dict.keys())
-        indicies = [i for i in range(len(companies))]
-
-        self.company_idx_to_name = dict(zip(indicies, companies))
-
-        self.max_seq_len = max([len(entries) for entries in self.merged_dict.values()])
-
+        indices = [i for i in range(len(companies))]
+        self.company_idx_to_name = dict(zip(indices, companies))
 
     def __len__(self):
         return len(self.merged_dict)
 
     def __getitem__(self, idx):
         entries = self.merged_dict[self.company_idx_to_name[idx]]
-
+        
         features = [x[0] for _, x in entries.items()]
         labels = [x[1] for _, x in entries.items()]
+
+        if len(features) > self.max_seq_len:
+            features = features[:self.max_seq_len]
+            labels = labels[:self.max_seq_len]
+        elif len(features) < self.max_seq_len:
+            pad_len = self.max_seq_len - len(features)
+            features.extend([torch.zeros_like(features[0])] * pad_len)
+            labels.extend([torch.zeros_like(labels[0])] * pad_len)
 
         features = torch.stack(features)
         labels = torch.stack(labels)

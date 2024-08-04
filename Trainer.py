@@ -60,34 +60,52 @@ class Trainer:
             # labels_b: (B, L)
             # mask_b: (B, L)
             features_b = features_b.to(self.device)
-            labels_b = labels_b.to(self.device)
+            labels_b = labels_b.to(self.device).long()
             mask_b = mask_b.to(self.device)
 
             # Forward Pass
-            output_b = self.model(features_b)
+            output_b = self.model(features_b)  # (B, L, C)
+            # print("Output shape:", output_b.shape, "Labels shape:", labels_b.shape, "Mask shape:", mask_b.shape)
 
-            output_flat = output_b.reshape(-1)
-            labels_flat = labels_b.reshape(-1)
-            mask_flat = mask_b.reshape(-1)
-            
-            output_masked = output_flat[mask_flat == 1]
-            labels_masked = labels_flat[mask_flat == 1]
+            # Flatten the output, labels, and mask
+            B, L, C = output_b.shape
+            output_flat = output_b.view(B * L, C).float()  # Ensure float type for output
+            labels_flat = labels_b.view(B * L).long()  # Ensure long type for labels
+            mask_flat = mask_b.view(B * L)  # (B*L)
 
+            # Ensure the shapes match
+            # print("Flattened shapes - Output:", output_flat.shape, "Labels:", labels_flat.shape, "Mask:", mask_flat.shape)
+            assert output_flat.size(0) == labels_flat.size(0) == mask_flat.size(0), "Flattened shapes mismatch"
+
+            # Apply the mask
+            output_masked = output_flat[mask_flat == 1]  # Only keep valid time steps
+            labels_masked = labels_flat[mask_flat == 1]  # Only keep valid time steps
+
+            # Ensure the shapes match after masking
+            # print("Masked shapes - Output:", output_masked.shape, "Labels:", labels_masked.shape)
+            assert output_masked.size(0) == labels_masked.size(0), "Output and labels shape mismatch after masking"
+
+            # Ensure data types are correct
+            assert output_masked.dtype == torch.float32, f"Output dtype should be float32, but got {output_masked.dtype}"
+            assert labels_masked.dtype == torch.int64, f"Labels dtype should be int64, but got {labels_masked.dtype}"
+
+            # Calculate loss
             loss = self.criterion(output_masked, labels_masked)
             loss.backward()
             self.optimizer.step()
 
             # Statistics
-            loss_accumulated += loss.item()
+            loss_accumulated += loss.item() * labels_masked.size(0)  # Multiply by the number of valid items to accumulate loss correctly
 
-            pred = torch.round(output_masked)
+            # Calculate accuracy
+            pred = torch.argmax(output_masked, 1)
             hit_count = (pred == labels_masked).sum().item()
             hit_accumulated += hit_count
-            total_items += len(labels_masked)
+            total_items += labels_masked.size(0)
 
-            self.progress_bar.set_postfix_str(f"Loss: {loss_accumulated/total_items:.3f}")
+            self.progress_bar.set_postfix_str(f"Loss: {loss_accumulated/total_items:.3f}, Accuracy: {hit_accumulated/total_items:.3f}")
         
-        return loss_accumulated/total_items, hit_accumulated/total_items
+        return loss_accumulated / total_items, hit_accumulated / total_items
 
 
     def validate_one_epoch(self):
@@ -96,35 +114,55 @@ class Trainer:
         total_items = 0
 
         self.model.eval()
-        self.progress_bar.set_description(f"Vaild Epoch {self.current_epoch}")
+        
         with torch.no_grad():
+            self.progress_bar.set_description(f"Validating Epoch {self.current_epoch}")
             for idx, (features_b, labels_b, mask_b) in enumerate(self.valid_loader):
+                # features_b: (B, L, len(features))
+                # labels_b: (B, L)
+                # mask_b: (B, L)
                 features_b = features_b.to(self.device)
-                labels_b = labels_b.to(self.device)
+                labels_b = labels_b.to(self.device).long()
                 mask_b = mask_b.to(self.device)
 
-                output_b = self.model(features_b) 
+                # Forward Pass
+                output_b = self.model(features_b)  # (B, L, C)
+                # print("Output shape:", output_b.shape, "Labels shape:", labels_b.shape, "Mask shape:", mask_b.shape)
 
-                output_flat = output_b.reshape(-1)
-                labels_flat = labels_b.reshape(-1)
-                mask_flat = mask_b.reshape(-1)
+                # Flatten the output, labels, and mask
+                B, L, C = output_b.shape
+                output_flat = output_b.view(B * L, C).float()  # Ensure float type for output
+                labels_flat = labels_b.view(B * L).long()  # Ensure long type for labels
+                mask_flat = mask_b.view(B * L)  # (B*L)
 
+                # Ensure the shapes match
+                # print("Flattened shapes - Output:", output_flat.shape, "Labels:", labels_flat.shape, "Mask:", mask_flat.shape)
+                assert output_flat.size(0) == labels_flat.size(0) == mask_flat.size(0), "Flattened shapes mismatch"
 
-                output_masked = output_flat[mask_flat == 1]
-                labels_masked = labels_flat[mask_flat == 1]
+                # Apply the mask
+                output_masked = output_flat[mask_flat == 1]  # Only keep valid time steps
+                labels_masked = labels_flat[mask_flat == 1]  # Only keep valid time steps
 
+                # Ensure the shapes match after masking
+                # print("Masked shapes - Output:", output_masked.shape, "Labels:", labels_masked.shape)
+                assert output_masked.size(0) == labels_masked.size(0), "Output and labels shape mismatch after masking"
+
+                # Calculate loss
                 loss = self.criterion(output_masked, labels_masked)
 
                 # Statistics
-                loss_accumulated += loss.item()
-                pred = torch.round(output_masked)
+                loss_accumulated += loss.item() * labels_masked.size(0)  # Multiply by the number of valid items to accumulate loss correctly
+
+                # Calculate accuracy
+                pred = torch.argmax(output_masked, 1)
                 hit_count = (pred == labels_masked).sum().item()
                 hit_accumulated += hit_count
-                total_items += len(labels_masked)
+                total_items += labels_masked.size(0)
 
-                self.progress_bar.set_postfix_str(f"Loss: {loss_accumulated/total_items:.3f}")
+                self.progress_bar.set_postfix_str(f"Validation Loss: {loss_accumulated/total_items:.3f}, Accuracy: {hit_accumulated/total_items:.3f}")
+        
+        return loss_accumulated / total_items, hit_accumulated / total_items
 
-        return loss_accumulated/total_items, hit_accumulated/total_items
     
     
     def summarize_one_epoch(self, train_loss, train_accuracy, valid_loss, valid_accuracy):

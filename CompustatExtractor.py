@@ -276,6 +276,8 @@ class CompustatExtractor:
 
         return merged_dict
     
+
+    
     @staticmethod
     def concatenate_features(data, k=4):
         """Generate a feature tensor by concatenating the features from the last k quarters.
