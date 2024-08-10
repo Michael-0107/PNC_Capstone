@@ -61,7 +61,7 @@ class CompustatExtractor:
         return record_df
 
     @staticmethod
-    def get_feature_tensor_dict(record_df: pd.DataFrame, target_features=None, add_cpi=True) -> OrderedDict:
+    def get_feature_tensor_dict(record_df: pd.DataFrame, target_features=None, add_cpi=False) -> OrderedDict:
         record_sorted_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[False, True, True]).copy()
 
         if target_features is None:
@@ -145,8 +145,9 @@ class CompustatExtractor:
     def get_ratings_by_quarter(df, start_date='2010-01-01', end_date='2017-01-01'):
         df = df[(df['datadate'] >= start_date) & (df['datadate'] <= end_date)]
 
-        df.loc[:, 'Quarter'] = df['datadate'].dt.to_period('Q')
-
+        df = df.copy()
+        df['Quarter'] = df['datadate'].dt.to_period('Q')
+        
         quarter_rating_dict = {}
 
         quarters = pd.period_range(start=start_date, end=end_date, freq='Q')

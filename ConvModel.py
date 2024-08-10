@@ -22,30 +22,52 @@ class BasicConvBlock(nn.Module):
         x = self.nn(x) # (B, out_channels, L/2)
         return x
 
+
 class ConvModel(nn.Module):
-    def __init__(self, feature_size):
+    def __init__(self, feature_size, sequence_length):
         super(ConvModel, self).__init__()
         self.convs = nn.Sequential(
-            # (B, L, C) -> (B, C, L)
-            BasicConvBlock(in_channels=feature_size, out_channels=32), # (B, 32, L/2)
-            BasicConvBlock(in_channels=32, out_channels=64), # (B, 64, L/4)
+            BasicConvBlock(in_channels=feature_size, out_channels=32),
+            BasicConvBlock(in_channels=32, out_channels=64)
         )
 
+        self.fc_input_size = 64 * (sequence_length // 4)
         self.fcs = nn.Sequential(
+            nn.Linear(self.fc_input_size, 128),
+            nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
+            nn.Linear(64, 1)
         )
 
+    def forward(self, x):
+        x = x.permute(0, 2, 1)  # (B, C, L)
+        x = self.convs(x)  # (B, 64, L/4)
+        x = x.view(x.shape[0], -1)  # (B, 64*L/4)
+        x = self.fcs(x)  # (B, 1)
+        return x
+
+class ConvModelV2(nn.Module):
+    def __init__(self, feature_size, sequence_length=4):
+        super(ConvModelV2, self).__init__()
+        self.convs = nn.Sequential(
+            BasicConvBlock(in_channels=feature_size, out_channels=32)
+        )
+
+        self.fc_input_size = 32 * (sequence_length // 2)
+        self.fcs = nn.Sequential(
+            nn.Linear(self.fc_input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1)
+        )
 
     def forward(self, x):
-        # x.shape = (batch_size=B, window_size=L, feature_size=C)
-        x = x.permute(0, 2, 1) # (B, C, L)
-        x = self.convs(x) # # (B, 64, L/4)
-        x = x.view(x.shape[0], -1) # (B, 64*L/4)
-        x = self.fcs(x) # (B, 1)
+        x = x.permute(0, 2, 1)  # (B, C, L)
+        x = self.convs(x)  # (B, 32, L/2)
+        x = x.view(x.shape[0], -1)  # (B, 32*L/2)
+        x = self.fcs(x)  # (B, 1)
         return x
 
 
