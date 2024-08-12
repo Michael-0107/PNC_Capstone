@@ -83,13 +83,14 @@ class Config:
 
     # Training hyperparameters
     epochs = 500
-    batch_size = 32
+    batch_size = 8
     train_ratio = 0.8
 
     # LSTM hyperparameters
     learning_rate = 1e-3
-    hidden_size = 256
+    hidden_size = 32
     proj_size = 0
+    weight_decay = 1e-4
 
 
 

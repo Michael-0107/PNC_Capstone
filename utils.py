@@ -20,6 +20,87 @@ def fix_random_seed(seed):
 def read_dict_json(path):
     with open(path, 'r') as f:
         return json.load(f)
+    
+def rating_to_one_hot_encoding(rating_to_category):
+    categories = list(rating_to_category.values())
+
+    categories_tensor = torch.tensor(categories)
+
+    one_hot_encodings = F.one_hot(categories_tensor, num_classes=len(rating_to_category))
+
+    rating_to_one_hot = {rating: one_hot for rating, one_hot in zip(rating_to_category.keys(), one_hot_encodings)}
+
+    return rating_to_one_hot
+    
+def merge_input_output_dicts_k(input_dict, output_dict,all_rating, k, verbose=True):
+    merged_dict = {}
+    rating_to_one_hot = rating_to_one_hot_encoding(rating_to_category)
+    k = k-1
+    
+    for company_name in output_dict:
+        if company_name not in input_dict:
+            continue
+        
+        for period in output_dict[company_name]:
+            if period not in input_dict[company_name]:
+                continue
+            
+            if company_name not in merged_dict:
+                merged_dict[company_name] = {}
+            
+            # get current rating and category
+            current_rating = output_dict[company_name][period]
+            current_category = rating_to_category[current_rating]
+            
+            # get current features
+            current_features = input_dict[company_name][period]
+            
+            # get k quarters features
+            features_list = []
+            current_year, current_quarter = map(int, period.split('Q'))
+            
+            for i in range(k, -1, -1):  # From previous k to current quarter
+                if current_quarter - i <= 0:
+                    prev_quarter = 4 + (current_quarter - i)
+                    prev_year = current_year - 1
+                else:
+                    prev_quarter = current_quarter - i
+                    prev_year = current_year
+                
+                prev_period = f"{prev_year}Q{prev_quarter}"
+                
+                if prev_period in input_dict[company_name] and prev_period in all_rating[company_name]:
+                    prev_features = input_dict[company_name][prev_period]
+                    prev_rating = all_rating[company_name][prev_period]
+                    prev_category = rating_to_category[prev_rating]
+                else:
+                    prev_features = [0] * len(current_features)
+                    # prev_category = rating_to_one_hot['NG']  
+                    prev_category = -1
+                
+                prev_features_tensor = torch.FloatTensor(prev_features)
+                prev_category_tensor = torch.FloatTensor([prev_category])
+                if i == 0:
+                    combined_tensor = prev_features_tensor
+                else:
+                    combined_tensor = torch.cat((prev_features_tensor, prev_category_tensor))
+                
+                features_list.append(combined_tensor)
+            
+            # Combine features
+            combined_features = torch.cat(features_list)
+            
+            # Only current Rating
+            combined_ratings = torch.FloatTensor([current_category])
+            
+            merged_dict[company_name][period] = (combined_features, combined_ratings)
+    
+    if verbose:
+        print(f"input_dict: {len(input_dict)}")
+        print(f"output_dict: {len(output_dict)}")
+        print(f"merged_dict: {len(merged_dict)}")
+
+    return merged_dict
 
 
 def save_pickle(save_dict, save_path):

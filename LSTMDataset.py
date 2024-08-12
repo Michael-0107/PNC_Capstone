@@ -5,30 +5,34 @@ from torch.utils.data import Dataset
 from Hypers import Config
 
 class LSTMDataset(Dataset):
-    def __init__(self, merged_dict, max_seq_len=4):
+    def __init__(self, merged_dict, max_seq_len=1):
         self.merged_dict = merged_dict
         self.max_seq_len = max_seq_len
         
-        companies = list(self.merged_dict.keys())
-        indices = [i for i in range(len(companies))]
-        self.company_idx_to_name = dict(zip(indices, companies))
+        self.data_indices = []
+        for company, entries in self.merged_dict.items():
+            num_entries = len(entries)
+            num_chunks = (num_entries + self.max_seq_len - 1) // self.max_seq_len
+            for i in range(num_chunks):
+                self.data_indices.append((company, i))
 
     def __len__(self):
-        return len(self.merged_dict)
+        return len(self.data_indices)
 
     def __getitem__(self, idx):
-        entries = self.merged_dict[self.company_idx_to_name[idx]]
+        company, chunk_idx = self.data_indices[idx]
+        entries = list(self.merged_dict[company].values())
         
-        features = [x[0] for _, x in entries.items()]
-        labels = [x[1] for _, x in entries.items()]
+        start = chunk_idx * self.max_seq_len
+        end = start + self.max_seq_len
+        
+        features = [x[0] for x in entries[start:end]]
+        labels = [x[1] for x in entries[start:end]]
 
-        if len(features) > self.max_seq_len:
-            features = features[:self.max_seq_len]
-            labels = labels[:self.max_seq_len]
-        elif len(features) < self.max_seq_len:
+        if len(features) < self.max_seq_len:
             pad_len = self.max_seq_len - len(features)
-            features.extend([torch.zeros_like(features[0])] * pad_len)
-            labels.extend([torch.zeros_like(labels[0])] * pad_len)
+            features.extend([torch.zeros(features[0].shape)] * pad_len)
+            labels.extend([torch.zeros(labels[0].shape)] * pad_len)
 
         features = torch.stack(features)
         labels = torch.stack(labels)
@@ -44,10 +48,12 @@ class LSTMDataset(Dataset):
         label_padded = label_padded.squeeze(-1)
 
         mask = torch.zeros((features_padded.shape[0], features_padded.shape[1]))
-        for idx, _ in enumerate(features):
-            mask[idx, 0:len(labels[idx])] = 1
+        for idx in range(len(features)):
+            mask[idx, :len(features[idx])] = 1
 
         return features_padded, label_padded, mask
+    
+
             
     
 if __name__ == "__main__":

@@ -5,6 +5,9 @@ from collections import OrderedDict
 import pickle
 
 from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+
 
 from Hypers import Config, feature_list, numeric_features, derived_features
 import Hypers
@@ -93,7 +96,7 @@ class CompustatExtractor:
         if target_cols is None:
             target_cols = feature_list
         for feature_name in target_cols:
-            record_df[feature_name] = RobustScaler().fit_transform(record_df[[feature_name]])
+            record_df[feature_name] = StandardScaler().fit_transform(record_df[[feature_name]])
         return record_df
 
     @staticmethod
