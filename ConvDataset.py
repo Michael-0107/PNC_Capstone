@@ -13,13 +13,15 @@ class ConvDataset(Dataset):
 
         self.feature_list = []
         self.label_list = []
+        self.label_normalized_list = []
 
         for comapny, entries in self.merged_dict.items():
-            for period, (feature, label) in entries.items():
+            for period, (feature, label, label_normalized) in entries.items():
                 self.feature_list.append(feature)
                 self.label_list.append(label)
+                self.label_normalized_list.append(label_normalized)
 
-        assert len(self.feature_list) == len(self.label_list)
+        assert len(self.feature_list) == len(self.label_list) == len(self.label_normalized_list)
 
         self.window_size = window_size
     
@@ -28,15 +30,16 @@ class ConvDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        return self.feature_list[idx].reshape(self.window_size,-1), self.label_list[idx]
+        return self.feature_list[idx].reshape(self.window_size,-1), self.label_list[idx], self.label_normalized_list[idx]
 
     @staticmethod
     def custom_collate_fn(batch):
-        features, labels = list(zip(*batch))
+        features, labels, labels_normalized = list(zip(*batch))
         features = torch.stack(features)
         labels = torch.stack(labels)
+        labels_normalized = torch.stack(labels_normalized)
         mask = torch.ones_like(labels)
-        return features, labels, mask
+        return features, labels, labels_normalized, mask
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import torch
 from collections import Counter
 
+import Hypers
 
 class Inferencer:
     def __init__(self, model=None, test_loader=None, device=None):
@@ -20,21 +21,24 @@ class Inferencer:
         difference_counter = Counter()
 
         with torch.no_grad():
-            for idx, (features_b, labels_b, mask_b) in enumerate(self.test_loader):
+            for idx, (features_b, labels_b, labels_normalized_b, mask_b) in enumerate(self.test_loader):
                 features_b = features_b.to(self.device)
                 labels_b = labels_b.to(self.device)
+                labels_normalized_b = labels_normalized_b.to(self.device)
                 mask_b = mask_b.to(self.device)
 
                 output_b = self.model(features_b)
 
                 output_flat = output_b.reshape(-1)
                 labels_flat = labels_b.reshape(-1)
+                labels_normalized_flat = labels_normalized_b.reshape(-1)
                 mask_flat = mask_b.reshape(-1)
 
                 output_masked = output_flat[mask_flat == 1]
                 labels_masked = labels_flat[mask_flat == 1]
+                labels_normalized_masked = labels_normalized_flat[mask_flat == 1]
 
-                pred = torch.round(output_masked)
+                pred = torch.round(output_masked * (len(Hypers.rating_to_category) - 1))
                 hit_count = (pred == labels_masked).sum().item()
                 hit_accumulated += hit_count
                 total_items += len(labels_masked)
