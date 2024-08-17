@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-
+import numpy as np
 import Hypers
 from Hypers import Config
 
@@ -40,7 +40,17 @@ class ConvDataset(Dataset):
         labels_normalized = torch.stack(labels_normalized)
         mask = torch.ones_like(labels)
         return features, labels, labels_normalized, mask
-
+    
+    @staticmethod
+    def custom_collate_fn2(batch):
+        features, labels, labels_normalized = list(zip(*batch))
+        
+        features = torch.stack([torch.tensor(f, dtype=torch.float32) if isinstance(f, np.ndarray) else f.clone().detach().float() for f in features])
+        labels = torch.stack([l.clone().detach().float() for l in labels])
+        labels_normalized = torch.stack([ln.clone().detach().float() for ln in labels_normalized])
+    
+        mask = torch.ones_like(labels)
+        return features, labels, labels_normalized, mask
 
 if __name__ == "__main__":
     import os

@@ -22,52 +22,52 @@ class BasicConvBlock(nn.Module):
         x = self.nn(x) # (B, out_channels, L/2)
         return x
 
-
 class ConvModel(nn.Module):
-    def __init__(self, feature_size, sequence_length):
+    def __init__(self, feature_size, num_conv_layers=2, dropout=False, batch_norm=False, activation_fn=nn.ReLU):
         super(ConvModel, self).__init__()
-        self.convs = nn.Sequential(
-            BasicConvBlock(in_channels=feature_size, out_channels=32),
-            BasicConvBlock(in_channels=32, out_channels=64)
-        )
+        layers = []
 
-        self.fc_input_size = 64 * (sequence_length // 4)
-        self.fcs = nn.Sequential(
-            nn.Linear(self.fc_input_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
-        )
+        in_channels = feature_size
+        out_channels = 32
+
+        for i in range(num_conv_layers):
+            layers.append(nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, stride=1, padding=1))
+            if batch_norm:
+                layers.append(nn.BatchNorm1d(out_channels))
+            layers.append(activation_fn())
+            layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
+            if dropout:
+                layers.append(nn.Dropout(0.3))
+            in_channels = out_channels
+            out_channels *= 2
+        
+        self.convs = nn.Sequential(*layers)
+        
+        fc_layers = []
+        fc_layers.append(nn.Linear(64, 32))
+        if batch_norm:
+            fc_layers.append(nn.BatchNorm1d(32))
+        fc_layers.append(activation_fn())
+        if dropout:
+            fc_layers.append(nn.Dropout(0.3))
+        
+        fc_layers.append(nn.Linear(32, 16))
+        if batch_norm:
+            fc_layers.append(nn.BatchNorm1d(16))
+        fc_layers.append(activation_fn())
+        if dropout:
+            fc_layers.append(nn.Dropout(0.3))
+        
+        fc_layers.append(nn.Linear(16, 1))
+        fc_layers.append(nn.Sigmoid())
+        
+        self.fcs = nn.Sequential(*fc_layers)
 
     def forward(self, x):
-        x = x.permute(0, 2, 1)  # (B, C, L)
-        x = self.convs(x)  # (B, 64, L/4)
-        x = x.view(x.shape[0], -1)  # (B, 64*L/4)
-        x = self.fcs(x)  # (B, 1)
-        return x
-
-class ConvModelV2(nn.Module):
-    def __init__(self, feature_size, sequence_length=4):
-        super(ConvModelV2, self).__init__()
-        self.convs = nn.Sequential(
-            BasicConvBlock(in_channels=feature_size, out_channels=32)
-        )
-
-        self.fc_input_size = 32 * (sequence_length // 2)
-        self.fcs = nn.Sequential(
-            nn.Linear(self.fc_input_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
-        )
-
-    def forward(self, x):
-        x = x.permute(0, 2, 1)  # (B, C, L)
-        x = self.convs(x)  # (B, 32, L/2)
-        x = x.view(x.shape[0], -1)  # (B, 32*L/2)
-        x = self.fcs(x)  # (B, 1)
+        x = x.permute(0, 2, 1)
+        x = self.convs(x)
+        x = x.view(x.shape[0], -1)
+        x = self.fcs(x)
         return x
 
 

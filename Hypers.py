@@ -97,7 +97,7 @@ class Config:
 
 
     # Training hyperparameters
-    epochs = 200
+    epochs = 100
     batch_size = 32
     train_ratio = 0.8
 
