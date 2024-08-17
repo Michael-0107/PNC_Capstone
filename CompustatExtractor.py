@@ -80,7 +80,7 @@ class CompustatExtractor:
         record_sorted_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[False, True, True]).copy()
 
         if target_features is None:
-                target_features = Hypers.feature_list
+                target_features = Hypers.feature_list.copy()
         if add_cpi:
             target_features.append("CPI")
 
@@ -144,16 +144,17 @@ class CompustatExtractor:
         if add_cpi:
             cpi_dict = utils.load_pickle(Config.cpi_path)
             record_appended = CompustatExtractor.append_cpi(record_appended, cpi_dict)
-
+            
         # Save human-readable intermediate results before normalizing
         if save:
             record_appended.to_csv(os.path.join(Config.data_path, f"{filestem}_scaler.csv"), index=False)
 
         # Normalize the features
         record_appended = CompustatExtractor.normalize_features(record_appended)
-
+        
         # Transform to dictionary
         feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended, add_cpi=add_cpi)
+        
 
         if save:
             utils.save_pickle(feature_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
@@ -311,7 +312,7 @@ class CompustatExtractor:
 
 
     @ staticmethod
-    def merge_input_output_dicts(input_dict, output_dict, verbose=True):
+    def merge_input_output_dicts(input_dict, output_dict, save=True, filestem="compustat", verbose=True):
         """Pair the input features to output ratings (Note: also chages the ratings to numbers). 
             The function will find the intersection of two dictionaries.
 
@@ -343,6 +344,9 @@ class CompustatExtractor:
 
                 merged_dict[company_name][period] = (input_dict[company_name][period], torch.FloatTensor([category]), torch.FloatTensor([category_normalized]))
         
+        if save:
+            utils.save_pickle(merged_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
+            
         if verbose:
             print(f"input_dict: {len(input_dict)}")
             print(f"output_dict: {len(output_dict)}")
