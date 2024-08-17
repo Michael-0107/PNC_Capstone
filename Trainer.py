@@ -172,13 +172,14 @@ class Trainer:
         self.model.train()
         
         self.progress_bar.set_description(f"Train Epoch {self.current_epoch}")
-        for idx, (features_b, labels_b, mask_b) in enumerate(self.train_loader):
+        for idx, (features_b, labels_b, labels_normalized_b, mask_b) in enumerate(self.train_loader):
             self.optimizer.zero_grad()
             # features_b: (B, L, len(features))
             # labels_b: (B, L)
             # mask_b: (B, L)
             features_b = features_b.to(self.device)
             labels_b = labels_b.to(self.device)
+            labels_normalized_b = labels_normalized_b.to(self.device)
             mask_b = mask_b.to(self.device)
 
             # print("Features shape:", features_b.shape, "Labels shape:", labels_b.shape, "Mask shape:", mask_b.shape)
@@ -188,21 +189,23 @@ class Trainer:
 
             output_flat = output_b.reshape(-1)
             labels_flat = labels_b.reshape(-1)
+            labels_normalized_flat = labels_normalized_b.reshape(-1)
             mask_flat = mask_b.reshape(-1)
             # print("output shape:", output_b.shape)
             # print("Flattened shapes - Output:", output_flat.shape, "Labels:", labels_flat.shape, "Mask:", mask_flat.shape)
             
             output_masked = output_flat[mask_flat == 1]
             labels_masked = labels_flat[mask_flat == 1]
+            labels_normalized_masked = labels_normalized_flat[mask_flat == 1]
 
-            loss = self.criterion(output_masked, labels_masked)
+            loss = self.criterion(output_masked, labels_normalized_masked)
             loss.backward()
             self.optimizer.step()
 
             # Statistics
             loss_accumulated += loss.item()
 
-            pred = torch.round(output_masked)
+            pred = torch.round(output_masked * (len(Hypers.rating_to_category) - 1))
             hit_count = (pred == labels_masked).sum().item()
             hit_accumulated += hit_count
             total_items += len(labels_masked)
@@ -220,26 +223,29 @@ class Trainer:
         self.model.eval()
         self.progress_bar.set_description(f"Vaild Epoch {self.current_epoch}")
         with torch.no_grad():
-            for idx, (features_b, labels_b, mask_b) in enumerate(self.valid_loader):
+            for idx, (features_b, labels_b, labels_normalized_b, mask_b) in enumerate(self.valid_loader):
                 features_b = features_b.to(self.device)
                 labels_b = labels_b.to(self.device)
+                labels_normalized_b = labels_normalized_b.to(self.device)
                 mask_b = mask_b.to(self.device)
 
                 output_b = self.model(features_b) 
 
                 output_flat = output_b.reshape(-1)
                 labels_flat = labels_b.reshape(-1)
+                labels_normalized_flat = labels_normalized_b.reshape(-1)
                 mask_flat = mask_b.reshape(-1)
 
 
                 output_masked = output_flat[mask_flat == 1]
                 labels_masked = labels_flat[mask_flat == 1]
+                labels_normalized_masked = labels_normalized_flat[mask_flat == 1]
 
-                loss = self.criterion(output_masked, labels_masked)
+                loss = self.criterion(output_masked, labels_normalized_masked)
 
                 # Statistics
                 loss_accumulated += loss.item()
-                pred = torch.round(output_masked)
+                pred = torch.round(output_masked * (len(Hypers.rating_to_category) - 1))
                 hit_count = (pred == labels_masked).sum().item()
                 hit_accumulated += hit_count
                 total_items += len(labels_masked)

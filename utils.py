@@ -6,7 +6,9 @@ import torch.nn.functional as F
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import pandas as pd
 
+import Hypers
 from Hypers import Config, rating_to_category
 
 def fix_random_seed(seed):
@@ -159,6 +161,23 @@ def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy, identifier:
     plt.show()
 
 
+def prepare_cpi_dict(cpi_path, start_year=2010, end_year=2021, save=True):
+    cpi_df = pd.read_csv(cpi_path, parse_dates=["Yearmon"], dayfirst=True)
+
+    cpi_dict = {}
+    for year in range(start_year, end_year):
+        for quarter in range(1, 5):
+            sample_date = pd.Timestamp(year=year, month=3 * quarter - 2, day=1)
+            cpi_dict[f"{year}Q{quarter}"] = float(cpi_df[cpi_df["Yearmon"] == sample_date]["CPI"].values[0])
+    
+    if save:
+        save_pickle(cpi_dict, os.path.join(Config.data_path, "cpi.pkl"))
+
+    return cpi_dict
+
+
+
 if __name__ == "__main__":
-    pass
+    cpi_dict = prepare_cpi_dict(os.path.join(Config.data_path, "US_CPI.csv"), save=True, start_year=1979)
+    print(cpi_dict)
     
