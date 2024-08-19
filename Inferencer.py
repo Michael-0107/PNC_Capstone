@@ -15,6 +15,7 @@ class Inferencer:
 
         truths = []
         preds = []
+        features = []
         hit_accumulated = 0
         total_items = 0
 
@@ -49,6 +50,7 @@ class Inferencer:
 
                 truths.append(labels_masked)
                 preds.append(pred)
+                features.append(features_b)
             
-        return torch.cat(preds), torch.cat(truths), hit_accumulated/total_items, difference_counter
+        return torch.cat(preds), torch.cat(truths), torch.cat(features), hit_accumulated/total_items, difference_counter
     

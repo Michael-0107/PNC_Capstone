@@ -61,6 +61,14 @@ class RatingProcessor:
         return increase, decrease, no_change
 
     def select_samples(self, increase, decrease, no_change):
+        num_samples = min(len(increase), len(decrease), len(no_change))
+        selected_increase = random.sample(increase, num_samples)
+        selected_decrease = random.sample(decrease, num_samples)
+        selected_no_change = random.sample(no_change, num_samples)
+
+        return selected_increase + selected_decrease + selected_no_change
+
+    def select_samples_test(self, increase, decrease, no_change):
         num_samples = min(len(increase), len(decrease), len(no_change))-30
         selected_increase = random.sample(increase, num_samples)
         selected_decrease = random.sample(decrease, num_samples)
@@ -87,9 +95,8 @@ class RatingProcessor:
                 self.test_ratings[company] = {}
             self.test_ratings[company][quarter] = self.df.loc[company, quarter]
 
-    def save_final_ratings(self, train_path, test_path):
+    def save_final_ratings(self, train_path):
         pd.to_pickle(self.final_ratings, train_path)
-        pd.to_pickle(self.test_ratings, test_path)
 
     def process_ratings(self, output_path):
         self.load_data()

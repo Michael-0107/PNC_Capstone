@@ -52,7 +52,7 @@ def merge_input_output_dicts_k(input_dict, output_dict,all_rating, k, verbose=Tr
             
             # get current rating and category
             current_rating = output_dict[company_name][period]
-            current_category = rating_to_category[current_rating]
+            current_category = rating_to_category[current_rating.strip("+-")]
             
             # get current features
             current_features = input_dict[company_name][period]
@@ -74,7 +74,7 @@ def merge_input_output_dicts_k(input_dict, output_dict,all_rating, k, verbose=Tr
                 if prev_period in input_dict[company_name] and prev_period in all_rating[company_name]:
                     prev_features = input_dict[company_name][prev_period]
                     prev_rating = all_rating[company_name][prev_period]
-                    prev_category = rating_to_category[prev_rating]
+                    prev_category = rating_to_category[prev_rating.strip("+-")]
                 else:
                     prev_features = [0] * len(current_features)
                     # prev_category = rating_to_one_hot['NG']  
@@ -94,8 +94,9 @@ def merge_input_output_dicts_k(input_dict, output_dict,all_rating, k, verbose=Tr
             
             # Only current Rating
             combined_ratings = torch.FloatTensor([current_category])
+            combined_ratings_normalized = combined_ratings / (len(Hypers.rating_to_category)-1)
             
-            merged_dict[company_name][period] = (combined_features, combined_ratings)
+            merged_dict[company_name][period] = (combined_features, combined_ratings,combined_ratings_normalized)
     
     if verbose:
         print(f"input_dict: {len(input_dict)}")
@@ -144,6 +145,87 @@ def spilt_train_valid(merged_dict, random_select=False, save=True, suffix=None):
             save_pickle(test_dict, os.path.join(Config.data_path, "test_dict.pkl"))
 
     return train_dict, test_dict
+
+from collections import defaultdict
+
+def remove_companies_with_few_quarters(train_dict, min_quarters=3):
+    filtered_dict = {}
+
+    for company, periods in train_dict.items():
+        if len(periods) >= min_quarters:
+            filtered_dict[company] = periods
+    
+    return filtered_dict
+
+def count_labels_in_train_dict(train_dict):
+    label_count = defaultdict(int)
+    
+    for company, periods in train_dict.items():
+        for period, (features, label, normalized_label) in periods.items():
+            label_value = label.item()  # 获取标签值
+            label_count[label_value] += 1
+    
+    return label_count
+
+def balance_train_dict(train_dict, target_count=1300, min_quarters=3, labels_to_balance=[3, 4, 5]):
+    # 第一步：删除季度数少于 min_quarters 的公司
+    train_dict = remove_companies_with_few_quarters(train_dict, min_quarters=min_quarters)
+    
+    # 统计初始标签数量
+    label_counts = count_labels_in_train_dict(train_dict)
+    
+    # 第一次删除：删除那些所有季度都属于目标标签的公司
+    for label in labels_to_balance:
+        companies_to_delete = []
+        if label_counts[label] > target_count:
+            for company_id in list(train_dict.keys()):
+                if label_counts[label] <= target_count:
+                    break  # 如果标签数量已经达到目标，停止删除
+
+                # 检查该公司的所有季度是否全都是该标签
+                company_labels = [content[1].item() for content in train_dict[company_id].values()]
+                if all(l == label for l in company_labels):
+                    # 如果该公司的所有季度数据都具有同一个标签，删除该公司
+                    label_counts[label] -= len(company_labels)
+                    companies_to_delete.append(company_id)
+
+            # 执行删除操作
+            for company_id in companies_to_delete:
+                del train_dict[company_id]
+
+    # 第二轮删除：删除那些包含目标标签的公司，直到数量符合要求
+    for label in labels_to_balance:
+        companies_to_delete = []
+        if label_counts[label] > target_count:
+            for company_id in list(train_dict.keys()):
+                if label_counts[label] <= target_count:
+                    break  # 如果标签数量已经达到目标，停止删除
+
+                # 检查公司是否有任何一个标签为当前目标标签
+                company_labels = [content[1].item() for content in train_dict[company_id].values()]
+                if any(l == label for l in company_labels):
+                    # 记录该公司中有多少个该标签
+                    label_occurrences = company_labels.count(label)
+                    # 标记删除公司
+                    label_counts[label] -= label_occurrences
+                    companies_to_delete.append(company_id)
+
+            # 执行删除操作
+            for company_id in companies_to_delete:
+                del train_dict[company_id]
+
+    # 重新统计每个标签的数量
+    final_label_counts = defaultdict(int)
+    for company_id, quarters in train_dict.items():
+        for quarter, content in quarters.items():
+            label = content[1].item()
+            if label in labels_to_balance:
+                final_label_counts[label] += 1
+
+    # 输出最终结果
+    print(f"The number of each labels: {dict(final_label_counts)}")
+    
+    return train_dict
 
 def plot_graph(train_loss, train_accuracy, test_loss, test_accuracy, identifier:str=""):
     plt.plot(train_loss)

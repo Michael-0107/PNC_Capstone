@@ -79,13 +79,17 @@ class CompustatExtractor:
         return record_df
 
     @staticmethod
-    def get_feature_tensor_dict(record_df: pd.DataFrame, target_features=None, add_cpi=True) -> OrderedDict:
+    def get_feature_tensor_dict(record_df: pd.DataFrame, target_features=None, add_cpi=True, add_diff=True) -> OrderedDict:
         record_sorted_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[False, True, True]).copy()
 
         if target_features is None:
-                target_features = Hypers.feature_list
+                if add_diff:
+                    target_features = Hypers.feature_list.copy()
+                else:
+                    target_features = Hypers.feature_list_withoutdiff.copy()
         if add_cpi:
             target_features.append("CPI")
+
 
         ret_dict = OrderedDict()
         for idx, row in record_sorted_df.iterrows():
@@ -107,15 +111,29 @@ class CompustatExtractor:
         return ret_dict
 
     @staticmethod
-    def normalize_features(record_df, target_cols=None):
+    def normalize_features(record_df, method="std", add_diff=True, target_cols=None):
         if target_cols is None:
-            target_cols = Hypers.feature_list
+            if add_diff:
+                target_cols = Hypers.feature_list_withoutdiff.copy()
+            else:
+                target_cols = Hypers.feature_list.copy()
+        
+        if method == "std":
+            scaler = StandardScaler()
+        elif method == "minmax":
+            scaler = MinMaxScaler()
+        elif method == "robust":
+            scaler = RobustScaler()
+        else:
+            raise ValueError(f"Unknown normalization method: {method}")
+        
         for feature_name in target_cols:
-            record_df[feature_name] = StandardScaler().fit_transform(record_df[[feature_name]])
+            record_df[feature_name] = scaler.fit_transform(record_df[[feature_name]])
+        
         return record_df
 
     @staticmethod
-    def process_compustat_features(csv_path, save=True, filestem="compustat", add_cpi=True):
+    def process_compustat_features(csv_path, save=True, filestem="compustat", add_cpi=True, add_diff=True, norm = 'std'):
         """Process features from Compustat csv files, into nested dictionaries (ticker->(period->features))
 
         Args:
@@ -138,7 +156,10 @@ class CompustatExtractor:
                               (record_df['datadate'] <= Config.record_end_threshold)]
 
         # Add period change
-        record_appended = CompustatExtractor.append_period_change(record_df)
+        if add_diff:
+            record_appended = CompustatExtractor.append_period_change(record_df)
+        else:
+            record_appended = record_df
 
         # Add derived financial ratios
         record_appended = CompustatExtractor.append_financial_ratio(record_appended)
@@ -153,10 +174,10 @@ class CompustatExtractor:
             record_appended.to_csv(os.path.join(Config.data_path, f"{filestem}_scaler.csv"), index=False)
 
         # Normalize the features
-        record_appended = CompustatExtractor.normalize_features(record_appended)
+        # record_appended = CompustatExtractor.normalize_features(record_appended, norm)
 
         # Transform to dictionary
-        feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended, add_cpi=add_cpi)
+        feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended, add_cpi=add_cpi, add_diff=add_diff)
 
         if save:
             utils.save_pickle(feature_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
