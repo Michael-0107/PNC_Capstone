@@ -102,6 +102,32 @@ class CompustatExtractor:
             ret_dict[ticker][peroid_str] = feature_tensor
         
         return ret_dict
+    
+    @staticmethod
+    def get_feature_tensor_dict2(record_df: pd.DataFrame, target_features=None, add_cpi=False) -> OrderedDict:
+        record_sorted_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[False, True, True]).copy()
+
+        if target_features is None:
+                target_features = Hypers.numeric_features.copy()
+        if add_cpi:
+            target_features.append("CPI")
+
+        ret_dict = OrderedDict()
+        for idx, row in record_sorted_df.iterrows():
+            ticker = row["tic"]
+            year = int(row["fyearq"])
+            quarter = int(row["fqtr"])
+            peroid_str = f"{year}Q{quarter}"
+            
+            if ticker not in ret_dict:
+                ret_dict[ticker] = {}
+            
+            features = [row[feature_name] for feature_name in target_features]       
+
+            feature_tensor = torch.tensor(features)
+            ret_dict[ticker][peroid_str] = feature_tensor
+        
+        return ret_dict
 
     @staticmethod
     def normalize_features(record_df, target_cols=None):
@@ -156,6 +182,38 @@ class CompustatExtractor:
         feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended, add_cpi=add_cpi)
         
 
+        if save:
+            utils.save_pickle(feature_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
+
+        return feature_dict
+    
+    @staticmethod
+    def process_compustat_features2(csv_path, save=True, filestem="compustat", add_cpi=True):
+        """Process features from Compustat csv files, into nested dictionaries (ticker->(period->features))
+
+        Args:
+            csv_path (_type_): path to the raw compustat feature csv file
+            save (bool, optional): whether to save the intermediate and final processed results. Defaults to True.
+            filestem (str, optional): The filestem of the saved result, will be save in {data_path}/{filestem}.pkl. Defaults to "compustat".
+            add_cpi (bool, optional): Whether to add CPI as additional feature. Defaults to True.
+
+        Returns:
+            _type_: Nested dictionary. First layer with key: ticker of the comapny, value: entries. Second layer (entries): key: period, value: feature vector
+        """
+        record_df = pd.read_csv(csv_path, parse_dates=["datadate"]) # may have nan in fyearq, fqtr
+        record_df = record_df.dropna(axis=0, how='any', subset=['tic', 'fyearq', 'fqtr']+Hypers.numeric_features)
+        record_df['fyearq'] = record_df['fyearq'].astype(int)
+        record_df['fqtr'] = record_df['fqtr'].astype(int)
+        record_df = record_df.sort_values(["tic", "fyearq", "fqtr"], ascending=[True, True, True])
+
+        # filter time
+        record_df = record_df[(record_df['datadate'] >= Config.record_begin_threshold) & \
+                              (record_df['datadate'] <= Config.record_end_threshold)]
+
+        
+        # Transform to dictionary
+        feature_dict = CompustatExtractor.get_feature_tensor_dict2(record_df, add_cpi=add_cpi)
+        
         if save:
             utils.save_pickle(feature_dict, os.path.join(Config.data_path, f"{filestem}.pkl"))
 
