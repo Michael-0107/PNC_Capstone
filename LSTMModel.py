@@ -7,7 +7,9 @@ from Hypers import Config
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=1, proj_size=0, batch_norm=False, dropout=0.0):
         super(LSTMModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=num_layers, batch_first=True, proj_size=proj_size,dropout=0.2)
+        self.lstm1 = nn.LSTM(input_size, hidden_size, num_layers=num_layers, batch_first=True, proj_size=proj_size)
+        # self.lstm2 = nn.LSTM(hidden_size if proj_size == 0 else proj_size, hidden_size, num_layers=1, batch_first=True)
+        # self.lstm3 = nn.LSTM(hidden_size, hidden_size, num_layers=1, batch_first=True)
         
         self.use_batch_norm = batch_norm
         self.use_dropout = dropout > 0.0
@@ -21,13 +23,21 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_size if proj_size == 0 else proj_size, 1)
 
 
+
     def forward(self, x):
-        h_lstm, _ = self.lstm(x)
+
+        out, _ = self.lstm1(x)
+        
+        # 通过第二层 LSTM
+        # out, _ = self.lstm2(out)
+        
+        # # 通过第三层 LSTM
+        # out, _ = self.lstm3(out)
         
         if self.use_batch_norm:
-            out = self.batch_norm(h_lstm.transpose(1, 2)).transpose(1, 2)
+            out = self.batch_norm(out.transpose(1, 2)).transpose(1, 2)
         else:
-            out = h_lstm
+            out = out
         
         if self.use_dropout:
             out = self.dropout(out)

@@ -111,12 +111,15 @@ class CompustatExtractor:
         return ret_dict
 
     @staticmethod
-    def normalize_features(record_df, method="std", add_diff=True, target_cols=None):
+    def normalize_features(record_df, method="std", add_diff=True, add_CPI = True, target_cols=None):
+        print(target_cols is None)
+
         if target_cols is None:
-            if add_diff:
-                target_cols = Hypers.feature_list_withoutdiff.copy()
-            else:
-                target_cols = Hypers.feature_list.copy()
+            target_cols = Hypers.feature_list_withoutdiff.copy() if add_diff else Hypers.feature_list.copy()
+
+        if add_CPI and "CPI" not in target_cols:
+            target_cols.append("CPI")
+        print(target_cols)
         
         if method == "std":
             scaler = StandardScaler()
@@ -174,7 +177,7 @@ class CompustatExtractor:
             record_appended.to_csv(os.path.join(Config.data_path, f"{filestem}_scaler.csv"), index=False)
 
         # Normalize the features
-        # record_appended = CompustatExtractor.normalize_features(record_appended, norm)
+        record_appended = CompustatExtractor.normalize_features(record_appended, norm)
 
         # Transform to dictionary
         feature_dict = CompustatExtractor.get_feature_tensor_dict(record_appended, add_cpi=add_cpi, add_diff=add_diff)
